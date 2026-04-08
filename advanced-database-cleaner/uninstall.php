@@ -34,6 +34,8 @@ class ADBC_Uninstall {
 	// List of all ADBC transients to delete on uninstall
 	private static $adbc_transients = [ 
 		'adbc_plugin_tables_to_repair' => 'all',
+		'adbc_plugin_innodb_conversion_lock' => 'all',
+		'adbc_plugin_post_types_dict_updated' => 'premium_pro',
 	];
 
 	// List of all ADBC cron jobs to unschedule on uninstall
@@ -243,6 +245,7 @@ class ADBC_Uninstall {
 		$automation_folder = $adbc_upload_folder . '/automation_events';
 		$addons_activity_file = $adbc_upload_folder . '/addons_activity.log';
 		$addons_activity_dictionary_file = $adbc_upload_folder . '/addons_activity_dictionary.log';
+		$registered_post_types_dictionary_file = $adbc_upload_folder . '/registered_post_types_dictionary.txt';
 
 		self::delete_folder( $scan_folder );
 		self::delete_folder( $analytics_folder );
@@ -253,6 +256,9 @@ class ADBC_Uninstall {
 
 		if ( file_exists( $addons_activity_dictionary_file ) )
 			wp_delete_file( $addons_activity_dictionary_file );
+
+		if ( file_exists( $registered_post_types_dictionary_file ) )
+			wp_delete_file( $registered_post_types_dictionary_file );
 
 	}
 
