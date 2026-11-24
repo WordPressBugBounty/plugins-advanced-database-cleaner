@@ -205,7 +205,7 @@ class ADBC_Cleanup_Woocommerce_Orphaned_Product_Variations_Handler extends ADBC_
 
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 
-		$wpdb->query( $wpdb->prepare(
+		ADBC_Change_Log::query( $wpdb->prepare(
 			"DELETE FROM {$wpdb->term_relationships}
 			WHERE object_id IN ( {$placeholders} )",
 			...$ids
@@ -213,7 +213,7 @@ class ADBC_Cleanup_Woocommerce_Orphaned_Product_Variations_Handler extends ADBC_
 
 		$lookup_table = $wpdb->prefix . 'wc_product_meta_lookup';
 		if ( ADBC_Tables::is_table_exists( $lookup_table ) ) {
-			$wpdb->query( $wpdb->prepare(
+			ADBC_Change_Log::query( $wpdb->prepare(
 				"DELETE FROM {$lookup_table}
 				WHERE product_id IN ( {$placeholders} )",
 				...$ids
@@ -231,20 +231,20 @@ class ADBC_Cleanup_Woocommerce_Orphaned_Product_Variations_Handler extends ADBC_
 			$comment_ids = array_map( 'intval', $comment_ids );
 			$comment_placeholders = implode( ',', array_fill( 0, count( $comment_ids ), '%d' ) );
 
-			$wpdb->query( $wpdb->prepare(
+			ADBC_Change_Log::query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->commentmeta}
 				WHERE comment_id IN ( {$comment_placeholders} )",
 				...$comment_ids
 			) );
 
-			$wpdb->query( $wpdb->prepare(
+			ADBC_Change_Log::query( $wpdb->prepare(
 				"DELETE FROM {$wpdb->comments}
 				WHERE comment_ID IN ( {$comment_placeholders} )",
 				...$comment_ids
 			) );
 		}
 
-		$affected = $wpdb->query( $wpdb->prepare(
+		$affected = ADBC_Change_Log::query( $wpdb->prepare(
 			"DELETE posts, postmeta
 			FROM {$wpdb->posts} posts
 			LEFT JOIN {$wpdb->postmeta} postmeta ON postmeta.post_id = posts.ID
@@ -265,6 +265,25 @@ class ADBC_Cleanup_Woocommerce_Orphaned_Product_Variations_Handler extends ADBC_
  * behavior. It is exposed in the UI as a one-click maintenance tool.
  */
 class ADBC_Cleanup_Woocommerce_Expired_Sessions_Handler implements ADBC_Cleanup_Type_Handler {
+
+	/** The maintenance-only category has no list/delete API; limit its SQL explicitly. */
+	public function purge_batch( $site_id, $limit = 20 ) {
+		global $wpdb;
+		ADBC_Sites::instance()->switch_to_blog_id( $site_id );
+		try {
+			$table = $wpdb->prefix . 'woocommerce_sessions';
+			if ( ! ADBC_Tables::is_table_exists( $table ) ) {
+				return [ 'processed' => 0, 'deleted' => 0 ];
+			}
+			$deleted = ADBC_Change_Log::query( $wpdb->prepare( 'DELETE FROM %i WHERE session_expiry < UNIX_TIMESTAMP() LIMIT %d', $table, min( 20, max( 1, (int) $limit ) ) ) );
+			if ( false === $deleted ) {
+				throw new RuntimeException( 'Could not delete expired WooCommerce sessions.' );
+			}
+			return [ 'processed' => (int) $deleted, 'deleted' => (int) $deleted ];
+		} finally {
+			ADBC_Sites::instance()->restore_blog();
+		}
+	}
 
 	public function count() {
 		return [ 'count' => 0, 'size' => 0 ];
@@ -292,7 +311,7 @@ class ADBC_Cleanup_Woocommerce_Expired_Sessions_Handler implements ADBC_Cleanup_
 
 			$table = $wpdb->prefix . 'woocommerce_sessions';
 			if ( ADBC_Tables::is_table_exists( $table ) ) {
-				$affected = $wpdb->query( "DELETE FROM {$table} WHERE session_expiry < UNIX_TIMESTAMP()" );
+				$affected = ADBC_Change_Log::query( "DELETE FROM {$table} WHERE session_expiry < UNIX_TIMESTAMP()" );
 				if ( $affected !== false ) {
 					$deleted += $affected;
 				}

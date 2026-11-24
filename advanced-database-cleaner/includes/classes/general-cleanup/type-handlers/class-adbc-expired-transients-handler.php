@@ -37,7 +37,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 		return true;
 	}
 	protected function sortable_columns() {
-		return [ 
+		return [
 			'id',
 			'name',
 			'value',
@@ -132,8 +132,8 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 
 		$site_id = get_current_blog_id();
 
-		$templates = [ 
-			[ 
+		$templates = [
+			[
 				'sql' => "
 					SELECT  a.option_id  AS id,
 					        a.option_name AS name,
@@ -156,7 +156,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 				'name_col' => 'a.option_name',
 				'value_col' => 'a.option_value',
 			],
-			[ 
+			[
 				'sql' => "
 					SELECT  a.option_id  AS id,
 					        a.option_name AS name,
@@ -182,7 +182,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 		];
 
 		if ( is_multisite() && is_main_site( $site_id ) ) {
-			$templates[] = [ 
+			$templates[] = [
 				'sql' => "
 					SELECT  a.meta_id    AS id,
 							a.meta_key   AS name,
@@ -282,8 +282,8 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 
 		$site_id = get_current_blog_id();
 
-		$templates = [ 
-			[ 
+		$templates = [
+			[
 				// normal transients in options
 				'sql' => "
 					SELECT
@@ -308,7 +308,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 				'name_col' => 'a.option_name',
 				'value_col' => 'a.option_value',
 			],
-			[ 
+			[
 				// site transients in options (edge case in multisite)
 				'sql' => "
 					SELECT
@@ -336,7 +336,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 		];
 
 		if ( is_multisite() && is_main_site( $site_id ) ) {
-			$templates[] = [ 
+			$templates[] = [
 				'sql' => "
 					SELECT
 						COUNT(*) AS count,
@@ -402,7 +402,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 	protected function add_composite_id( &$rows ) {
 
 		foreach ( $rows as &$row ) {
-			$row['composite_id'] = [ 
+			$row['composite_id'] = [
 				'site_id' => (int) $row['site_id'],
 				'items_type' => $this->items_type(),
 				'id' => (int) $row['id'],
@@ -471,7 +471,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 
 			// Clean up expired site transients stored in options table in multisite (edge case).
 			if ( is_multisite() )
-				$wpdb->query(
+				ADBC_Change_Log::query(
 					$wpdb->prepare( "
 					DELETE a, b FROM {$wpdb->options} a, {$wpdb->options} b
 					WHERE a.option_name LIKE %s
@@ -544,7 +544,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 									WHERE meta_key IN ( %s, %s )
 								";
 
-								$deleted_rows = $wpdb->query(
+								$deleted_rows = ADBC_Change_Log::query(
 									$wpdb->prepare( $sql, $full_name, $timeout_key )
 								);
 
@@ -664,7 +664,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 
 				if ( $where_parts ) {
 					$sql = "DELETE FROM {$wpdb->options} WHERE " . implode( ' OR ', $where_parts );
-					$wpdb->query( $wpdb->prepare( $sql, $params ) );
+					ADBC_Change_Log::query( $wpdb->prepare( $sql, $params ) );
 				}
 
 				// Count only primary transient rows, not the timeout rows.
@@ -692,7 +692,7 @@ class ADBC_Cleanup_Expired_Transients_Handler extends ADBC_Abstract_Cleanup_Hand
 
 				if ( $where_parts ) {
 					$sql = "DELETE FROM {$wpdb->sitemeta} WHERE " . implode( ' OR ', $where_parts );
-					$wpdb->query( $wpdb->prepare( $sql, $params ) );
+					ADBC_Change_Log::query( $wpdb->prepare( $sql, $params ) );
 				}
 
 				// Count only primary transient rows, not the timeout rows.

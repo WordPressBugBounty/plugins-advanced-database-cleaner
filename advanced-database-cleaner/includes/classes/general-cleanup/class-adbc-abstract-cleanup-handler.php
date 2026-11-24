@@ -381,7 +381,7 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	protected function add_composite_id( &$rows ) {
 
 		foreach ( $rows as &$row ) {
-			$row['composite_id'] = [ 
+			$row['composite_id'] = [
 				'site_id' => (int) $row['site_id'],
 				'items_type' => $this->items_type(),
 				'id' => (int) $row[ $this->pk()],
@@ -528,7 +528,7 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 
 		$site_id = $args['site_id'] ?? 'all';
 
-		$total = [ 
+		$total = [
 			'count' => 0,
 			'size' => 0,
 		];
@@ -731,15 +731,50 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	 * 
 	 * @return int The number of deleted items.
 	 */
+	/** One bounded purge step for background callers. Re-query page one after deletion. */
+	public function purge_batch( $site_id, $limit = 20 ) {
+		return ADBC_Change_Log::run( 'purge_items', [ 'items_type' => $this->items_type() ], function () use ($site_id, $limit) {
+			global $wpdb;
+			$request = new WP_REST_Request( 'GET' );
+			$request->set_query_params( [ 'site' => $site_id, 'itemsType' => $this->items_type(), 'itemsPerPage' => min( 20, max( 1, (int) $limit ) ), 'currentPage' => 1 ] );
+			$args = ADBC_Common_Validator::sanitize_filters( $request );
+			// Internal callers must retain the requested site in Free as well.
+			$args['site_id'] = $site_id;
+			$wpdb->last_error = '';
+			try {
+				$rows = $this->list( $args );
+				if ( $wpdb->last_error ) {
+					throw new RuntimeException( 'Could not select the next cleanup batch.' );
+				}
+				if ( ! $rows ) {
+					return [ 'processed' => 0, 'deleted' => 0 ];
+				}
+				$items = array_map( static fn( $row ) => array_merge( $row, $row['composite_id'] ), $rows );
+				$deleted = $this->delete( $items );
+				if ( $wpdb->last_error ) {
+					throw new RuntimeException( 'The cleanup batch could not be deleted.' );
+				}
+				if ( $deleted < 1 ) {
+					throw new RuntimeException( 'Cleanup made no progress. Review the remaining items before retrying.' );
+				}
+				return [ 'processed' => count( $items ), 'deleted' => (int) $deleted ];
+			} finally {
+				ADBC_Sites::instance()->restore_blog();
+			}
+		}, [] );
+	}
+
 	public function purge() {
+		return ADBC_Change_Log::run( 'purge_items', [ 'items_type' => $this->items_type() ], function () {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' )
-			return $this->purge_native();
-		else
-			return $this->purge_sql();
+			if ( $cleanup_method === 'native' )
+				return $this->purge_native();
+			else
+				return $this->purge_sql();
 
+		}, [ 'count_result' => 'processed_items' ] );
 	}
 
 	/**
@@ -752,14 +787,16 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 	 * @return int The number of affected rows.
 	 */
 	public function delete( $items ) {
+		return ADBC_Change_Log::run( 'delete_items', [ 'items_type' => $this->items_type(), 'selected' => $items ], function () use ($items) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' )
-			return $this->delete_native( $items );
-		else
-			return $this->delete_sql( $items );
+			if ( $cleanup_method === 'native' )
+				return $this->delete_native( $items );
+			else
+				return $this->delete_sql( $items );
 
+		}, [ 'count_result' => 'processed_items' ] );
 	}
 
 	/**
@@ -835,12 +872,12 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 
 			$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 
-			$sql = "DELETE FROM {$this->table()} main
+			$sql = "DELETE FROM {$this->table()}
 					WHERE {$this->pk()} IN ( $placeholders )";
 
 			$sql = $wpdb->prepare( $sql, ...$ids );
 
-			$affected += $wpdb->query( $sql );
+			$affected += ADBC_Change_Log::query( $sql );
 
 			ADBC_Sites::instance()->restore_blog();
 
@@ -949,7 +986,7 @@ abstract class ADBC_Abstract_Cleanup_Handler implements ADBC_Cleanup_Type_Handle
 				)
 			";
 
-			$deleted += $wpdb->query( $sql );
+			$deleted += ADBC_Change_Log::query( $sql );
 
 			ADBC_Sites::instance()->restore_blog();
 

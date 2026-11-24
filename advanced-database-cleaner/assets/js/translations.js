@@ -47,6 +47,7 @@ const translations = [
   __("Automation", "advanced-database-cleaner"),
   __("DB analytics", "advanced-database-cleaner"),
   __("Addons activity", "advanced-database-cleaner"),
+  __("MCP server", "advanced-database-cleaner"),
   __("Info & logs", "advanced-database-cleaner"),
   __("Settings", "advanced-database-cleaner"),
   __("Orphaned product variations", "advanced-database-cleaner"),
@@ -175,6 +176,63 @@ const translations = [
     _n("%d second", "%d seconds", variable, "advanced-database-cleaner"),
     variable
   ),
+  __("All sources", "advanced-database-cleaner"),
+  __("Plugin dashboard", "advanced-database-cleaner"),
+  __("WordPress abilities", "advanced-database-cleaner"),
+  __("Scheduled cleanup", "advanced-database-cleaner"),
+  __("All outcomes", "advanced-database-cleaner"),
+  __("Success", "advanced-database-cleaner"),
+  __("Failed", "advanced-database-cleaner"),
+  __("Partial success", "advanced-database-cleaner"),
+  __("All retained dates", "advanced-database-cleaner"),
+  __("Today", "advanced-database-cleaner"),
+  __("Yesterday", "advanced-database-cleaner"),
+  __("Last 7 days", "advanced-database-cleaner"),
+  __("Last 30 days", "advanced-database-cleaner"),
+  __("Custom range", "advanced-database-cleaner"),
+  __("Autoload fix", "advanced-database-cleaner"),
+  __("Undo autoload fix", "advanced-database-cleaner"),
+  __("SQL write", "advanced-database-cleaner"),
+  __("Delete cleanup items", "advanced-database-cleaner"),
+  __("Delete options", "advanced-database-cleaner"),
+  __("Delete transients", "advanced-database-cleaner"),
+  __("Delete post metadata", "advanced-database-cleaner"),
+  __("Delete user metadata", "advanced-database-cleaner"),
+  __("Delete posts by type", "advanced-database-cleaner"),
+  __("Delete cron jobs", "advanced-database-cleaner"),
+  __("Drop tables", "advanced-database-cleaner"),
+  __("Empty tables", "advanced-database-cleaner"),
+  __("Optimize tables", "advanced-database-cleaner"),
+  __("Repair tables", "advanced-database-cleaner"),
+  __("Refresh table statistics", "advanced-database-cleaner"),
+  __("Convert tables to InnoDB", "advanced-database-cleaner"),
+  __("Enable option autoload", "advanced-database-cleaner"),
+  __("Disable option autoload", "advanced-database-cleaner"),
+  __("Enable transient autoload", "advanced-database-cleaner"),
+  __("Disable transient autoload", "advanced-database-cleaner"),
+  __("Unavailable", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %d: WordPress user ID. */
+    __("User #%d", "advanced-database-cleaner"),
+    variable
+  ),
+  __("Scheduled task", "advanced-database-cleaner"),
+  __("System", "advanced-database-cleaner"),
+  __(
+    "Execution was interrupted. Database changes could not be verified. Check the database before retrying.",
+    "advanced-database-cleaner"
+  ),
+  __("The operation completed normally.", "advanced-database-cleaner"),
+  __("The SQL transaction was committed.", "advanced-database-cleaner"),
+  __("The operation completed successfully without changing rows.", "advanced-database-cleaner"),
+  __("The operation did not complete normally.", "advanced-database-cleaner"),
+  __("The transaction was rolled back; no changes were committed.", "advanced-database-cleaner"),
+  __(
+    "All targets were skipped; the requested work was not completed.",
+    "advanced-database-cleaner"
+  ),
+  __("Some targets were processed and others were skipped.", "advanced-database-cleaner"),
+  __("Some targets were processed and others failed.", "advanced-database-cleaner"),
   __("All tables", "advanced-database-cleaner"),
   __("Plugins tables", "advanced-database-cleaner"),
   __("Themes tables", "advanced-database-cleaner"),
@@ -271,8 +329,6 @@ const translations = [
   __("Actionscheduler orphan logs", "advanced-database-cleaner"),
   __("Orphaned product variations", "advanced-database-cleaner"),
   __("Orphaned customer analytics", "advanced-database-cleaner"),
-  __("Repair tables", "advanced-database-cleaner"),
-  __("Optimize tables", "advanced-database-cleaner"),
   __("Completed actions", "advanced-database-cleaner"),
   __("Failed actions", "advanced-database-cleaner"),
   __("Canceled actions", "advanced-database-cleaner"),
@@ -289,6 +345,122 @@ const translations = [
   __("Error!", "advanced-database-cleaner"),
   __("Unknown error occurred!", "advanced-database-cleaner"),
   __("Info!", "advanced-database-cleaner"),
+  __("Standard support", "advanced-database-cleaner"),
+  __("Priority support", "advanced-database-cleaner"),
+  __("Premium support", "advanced-database-cleaner"),
+  __("Not included: ", "advanced-database-cleaner"),
+  __("License for unlimited sites", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %d: Number of sites covered by the license. */
+    _n("License for %d site", "License for %d sites", variable, "advanced-database-cleaner"),
+    variable
+  ),
+  __("All Pro features", "advanced-database-cleaner"),
+  __("Local orphan detection", "advanced-database-cleaner"),
+  __("Scheduled database cleanup", "advanced-database-cleaner"),
+  __("Technical support", "advanced-database-cleaner"),
+  __("WordPress multisite", "advanced-database-cleaner"),
+  __("All Premium features", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %d: Number of remote scan credits included per day. */
+    __("%d daily remote scan credits", "advanced-database-cleaner"),
+    variable
+  ),
+  sprintf(
+    /* translators: %s: Premium plan name. */
+    __("Premium %s", "advanced-database-cleaner"),
+    variable
+  ),
+  __("/ year", "advanced-database-cleaner"),
+  __("one-time payment", "advanced-database-cleaner"),
+  __("one-time", "advanced-database-cleaner"),
+  __("Annual license", "advanced-database-cleaner"),
+  __("Lifetime license", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %s: Formatted amount saved on the purchase. */
+    __("Save %s", "advanced-database-cleaner"),
+    variable
+  ),
+  sprintf(
+    /* translators: 1: Plan name, 2: Formatted upgrade price. */
+    __("Upgrade to %1$s for %2$s", "advanced-database-cleaner"),
+    variable,
+    variable
+  ),
+  sprintf(
+    /* translators: %s: Formatted upgrade price. */
+    __("Upgrade for %s", "advanced-database-cleaner"),
+    variable
+  ),
+  __("The same discount applies to every renewal.", "advanced-database-cleaner"),
+  __("Current plan", "advanced-database-cleaner"),
+  __("Upgrade unavailable", "advanced-database-cleaner"),
+  __("Choose your upgrade", "advanced-database-cleaner"),
+  __("Choose your Premium plan", "advanced-database-cleaner"),
+  __(
+    "Available upgrades for your license, with current store pricing.",
+    "advanced-database-cleaner"
+  ),
+  __("Choose your billing period and the number of sites you need.", "advanced-database-cleaner"),
+  __("Close", "advanced-database-cleaner"),
+  __("Refresh prices", "advanced-database-cleaner"),
+  __("Open my SigmaPlugin account", "advanced-database-cleaner"),
+  __("View plans on SigmaPlugin", "advanced-database-cleaner"),
+  __("How to upgrade your license", "advanced-database-cleaner"),
+  __("Log in to your SigmaPlugin account", "advanced-database-cleaner"),
+  __("your account page", "advanced-database-cleaner"),
+  __(
+    /* translators: %s is a link labeled “your account page”. */
+    "In the left menu of %s, open “Licenses” and click “Upgrade License” next to your license.",
+    "advanced-database-cleaner"
+  ),
+  __("Open your upgrade options", "advanced-database-cleaner"),
+  __("Enjoy!", "advanced-database-cleaner"),
+  __("Use your coupon at checkout", "advanced-database-cleaner"),
+  __("Billing period", "advanced-database-cleaner"),
+  __("Annual", "advanced-database-cleaner"),
+  __("Lifetime", "advanced-database-cleaner"),
+  __("Annual license upgrades", "advanced-database-cleaner"),
+  __("Lifetime license upgrades", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %s: Name of the user's current plan. */
+    __(
+      "Your current plan is %s. Compare regular plan prices and see what each eligible upgrade costs today.",
+      "advanced-database-cleaner"
+    ),
+    variable
+  ),
+  __("Available plans", "advanced-database-cleaner"),
+  __(
+    "Your license is included automatically. Sign in to your SigmaPlugin account at checkout to confirm your total.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The Black Friday discount is included in the prices shown and applied at checkout. Tax and final totals are confirmed there.",
+    "advanced-database-cleaner"
+  ),
+  sprintf(
+    /* translators: %s: Name of the selected upgrade plan. */
+    __("%s upgrade · Due today", "advanced-database-cleaner"),
+    variable
+  ),
+  __("Go to checkout", "advanced-database-cleaner"),
+  __(
+    "These prices need refreshing. Check the latest prices before continuing.",
+    "advanced-database-cleaner"
+  ),
+  __("Loading your available upgrades…", "advanced-database-cleaner"),
+  __("Loading plans and Black Friday prices…", "advanced-database-cleaner"),
+  __("Could not load the available plans.", "advanced-database-cleaner"),
+  __("No plans are available right now. Please check again shortly.", "advanced-database-cleaner"),
+  __(
+    "These prices need refreshing. Check the latest prices before continuing.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "We couldn’t load the current prices. Try again or visit SigmaPlugin to view your options.",
+    "advanced-database-cleaner"
+  ),
   __("Start a scan for tables", "advanced-database-cleaner"),
   __("Start a scan for options", "advanced-database-cleaner"),
   __("Start a scan for post meta", "advanced-database-cleaner"),
@@ -349,6 +521,93 @@ const translations = [
   __("In", "advanced-database-cleaner"),
   __("Never expires", "advanced-database-cleaner"),
   __("No", "advanced-database-cleaner"),
+  __("Cancel", "advanced-database-cleaner"),
+  __("Don't forget to make a backup of your database first!", "advanced-database-cleaner"),
+  __("No activity recorded", "advanced-database-cleaner"),
+  __("Just now", "advanced-database-cleaner"),
+  __("Not available", "advanced-database-cleaner"),
+  __("User unavailable", "advanced-database-cleaner"),
+  __("Connection name", "advanced-database-cleaner"),
+  __("AI client", "advanced-database-cleaner"),
+  __("Read access", "advanced-database-cleaner"),
+  __("Enabled (required)", "advanced-database-cleaner"),
+  __("Write access", "advanced-database-cleaner"),
+  __("Enabled", "advanced-database-cleaner"),
+  __("Disabled", "advanced-database-cleaner"),
+  __("Access channel", "advanced-database-cleaner"),
+  __("ADBC MCP", "advanced-database-cleaner"),
+  __("Authentication", "advanced-database-cleaner"),
+  __("OAuth", "advanced-database-cleaner"),
+  __("Application Password", "advanced-database-cleaner"),
+  __("WordPress account", "advanced-database-cleaner"),
+  __("Connected", "advanced-database-cleaner"),
+  __("Last activity", "advanced-database-cleaner"),
+  __("Client software", "advanced-database-cleaner"),
+  __("Client title", "advanced-database-cleaner"),
+  __("Client version", "advanced-database-cleaner"),
+  __("OAuth client ID", "advanced-database-cleaner"),
+  __("Application Password ID", "advanced-database-cleaner"),
+  __("Connection ID", "advanced-database-cleaner"),
+  __("Connection details", "advanced-database-cleaner"),
+  __("Successful", "advanced-database-cleaner"),
+  __("Partially successful", "advanced-database-cleaner"),
+  __(
+    "The Free and old Pro versions can be uninstalled since you are using the newest Premium version",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The Free version can be uninstalled since you are using the Premium version",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The old Pro version can be uninstalled since you are using the newest Premium version",
+    "advanced-database-cleaner"
+  ),
+  __("Manual corrections", "advanced-database-cleaner"),
+  __("Keep Last", "advanced-database-cleaner"),
+  __("Automation tasks", "advanced-database-cleaner"),
+  __("Uninstall old versions", "advanced-database-cleaner"),
+  __("Import completed", "advanced-database-cleaner"),
+  __("Here are the results of your data import", "advanced-database-cleaner"),
+  __("No data to import. You can uninstall the previous version(s)", "advanced-database-cleaner"),
+  __("Import data from previous version", "advanced-database-cleaner"),
+  __("Select the items you want to import or actions to perform", "advanced-database-cleaner"),
+  __("Import manual corrections", "advanced-database-cleaner"),
+  __(
+    "Import your custom manual corrections you made in the previous version",
+    "advanced-database-cleaner"
+  ),
+  __("Import Keep Last", "advanced-database-cleaner"),
+  __("Preserve your -Keep Last- settings and configurations", "advanced-database-cleaner"),
+  __("Import tasks", "advanced-database-cleaner"),
+  __("Import all your automation tasks and schedules.", "advanced-database-cleaner"),
+  __(
+    "(For technical reasons, tasks will be deactivated after import and you will need to activate them again)",
+    "advanced-database-cleaner"
+  ),
+  __("Uninstall previous versions?", "advanced-database-cleaner"),
+  __("Processing ...", "advanced-database-cleaner"),
+  __("Proceed", "advanced-database-cleaner"),
+  __("Processing, please wait...", "advanced-database-cleaner"),
+  __("View documentation", "advanced-database-cleaner"),
+  __("Access comprehensive guides and tutorials", "advanced-database-cleaner"),
+  __("Find answers to common questions", "advanced-database-cleaner"),
+  __("Contact us", "advanced-database-cleaner"),
+  __("Contact us for personalized assistance", "advanced-database-cleaner"),
+  __("Get help with technical issues, billing ...", "advanced-database-cleaner"),
+  __("Not supported!", "advanced-database-cleaner"),
+  __("Days", "advanced-database-cleaner"),
+  __("Hours", "advanced-database-cleaner"),
+  __("Min", "advanced-database-cleaner"),
+  __("Sec", "advanced-database-cleaner"),
+  __("Hide this offer", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %s: date when the offer ends, e.g. "Nov 27". */
+    __("Ends %s", "advanced-database-cleaner"),
+    variable
+  ),
+  __("off", "advanced-database-cleaner"),
+  __("Use code", "advanced-database-cleaner"),
   __("Current Database Size", "advanced-database-cleaner"),
   __(
     "You must first activate your plugin license before synchronizing your balance.",
@@ -386,65 +645,23 @@ const translations = [
     __("%d%% OFF", "advanced-database-cleaner"),
     variable
   ),
-  __("Use code", "advanced-database-cleaner"),
   __("I want to try it", "advanced-database-cleaner"),
-  __("Not supported!", "advanced-database-cleaner"),
-  __("Cancel", "advanced-database-cleaner"),
-  __("Don't forget to make a backup of your database first!", "advanced-database-cleaner"),
-  __("Successful", "advanced-database-cleaner"),
-  __("Failed", "advanced-database-cleaner"),
-  __("Partially successful", "advanced-database-cleaner"),
-  __(
-    "The Free and old Pro versions can be uninstalled since you are using the newest Premium version",
-    "advanced-database-cleaner"
-  ),
-  __(
-    "The Free version can be uninstalled since you are using the Premium version",
-    "advanced-database-cleaner"
-  ),
-  __(
-    "The old Pro version can be uninstalled since you are using the newest Premium version",
-    "advanced-database-cleaner"
-  ),
-  __("Manual corrections", "advanced-database-cleaner"),
-  __("Keep Last", "advanced-database-cleaner"),
-  __("Automation tasks", "advanced-database-cleaner"),
-  __("Uninstall old versions", "advanced-database-cleaner"),
-  __("Import completed", "advanced-database-cleaner"),
-  __("Here are the results of your data import", "advanced-database-cleaner"),
-  __("Close", "advanced-database-cleaner"),
-  __("No data to import. You can uninstall the previous version(s)", "advanced-database-cleaner"),
-  __("Import data from previous version", "advanced-database-cleaner"),
-  __("Select the items you want to import or actions to perform", "advanced-database-cleaner"),
-  __("Import manual corrections", "advanced-database-cleaner"),
-  __(
-    "Import your custom manual corrections you made in the previous version",
-    "advanced-database-cleaner"
-  ),
-  __("Import Keep Last", "advanced-database-cleaner"),
-  __("Preserve your -Keep Last- settings and configurations", "advanced-database-cleaner"),
-  __("Import tasks", "advanced-database-cleaner"),
-  __("Import all your automation tasks and schedules.", "advanced-database-cleaner"),
-  __(
-    "(For technical reasons, tasks will be deactivated after import and you will need to activate them again)",
-    "advanced-database-cleaner"
-  ),
-  __("Uninstall previous versions?", "advanced-database-cleaner"),
-  __("Processing ...", "advanced-database-cleaner"),
-  __("Proceed", "advanced-database-cleaner"),
-  __("Processing, please wait...", "advanced-database-cleaner"),
-  __("View documentation", "advanced-database-cleaner"),
-  __("Access comprehensive guides and tutorials", "advanced-database-cleaner"),
-  __("Find answers to common questions", "advanced-database-cleaner"),
-  __("Contact us", "advanced-database-cleaner"),
-  __("Contact us for personalized assistance", "advanced-database-cleaner"),
-  __("Get help with technical issues, billing ...", "advanced-database-cleaner"),
   __("Read more", "advanced-database-cleaner"),
   __("Confirm", "advanced-database-cleaner"),
   __("All", "advanced-database-cleaner"),
   __("Activation", "advanced-database-cleaner"),
   __("Deactivation", "advanced-database-cleaner"),
   __("Uninstall", "advanced-database-cleaner"),
+  __(
+    "History was cleared, but the timeline could not be refreshed. Click Refresh to try again.",
+    "advanced-database-cleaner"
+  ),
+  __("Clear all addons activity history?", "advanced-database-cleaner"),
+  __(
+    "This permanently removes the entire addons activity history, including entries outside the current filters and page. Monitoring settings are not changed.",
+    "advanced-database-cleaner"
+  ),
+  __("Clear all history", "advanced-database-cleaner"),
   __("No activity found!", "advanced-database-cleaner"),
   __(
     "No activity found for the applied filters. Try different filters.",
@@ -482,75 +699,12 @@ const translations = [
   __("Search and filter activities", "advanced-database-cleaner"),
   __("Upgrade to Premium", "advanced-database-cleaner"),
   __("Learn more about Premium features", "advanced-database-cleaner"),
-  __("Overview", "advanced-database-cleaner"),
-  __("Tables analytics", "advanced-database-cleaner"),
-  __("Last analytics execution was successful on:", "advanced-database-cleaner"),
-  __("Last analytics execution failed on:", "advanced-database-cleaner"),
-  __(
-    "You disabled this module. Please enable it in the settings to track database changes.",
-    "advanced-database-cleaner"
-  ),
-  __(" (local time)", "advanced-database-cleaner"),
-  __("Note: Analytics data is refreshed every 24 hours.", "advanced-database-cleaner"),
-  __("Database size", "advanced-database-cleaner"),
-  __("Total tables", "advanced-database-cleaner"),
-  __("Tables added", "advanced-database-cleaner"),
-  __("Tables deleted", "advanced-database-cleaner"),
-  __("Daily", "advanced-database-cleaner"),
-  __("Monthly", "advanced-database-cleaner"),
-  __("Last 7 days", "advanced-database-cleaner"),
-  __("Last 30 days", "advanced-database-cleaner"),
-  __("Last 90 days", "advanced-database-cleaner"),
-  __("Please select valid start and end dates.", "advanced-database-cleaner"),
-  __("Start date cannot be after end date.", "advanced-database-cleaner"),
-  __("Quick ranges", "advanced-database-cleaner"),
-  __("From", "advanced-database-cleaner"),
-  __("To", "advanced-database-cleaner"),
-  __("Apply", "advanced-database-cleaner"),
-  __("Refresh analytics", "advanced-database-cleaner"),
-  __("Tables count", "advanced-database-cleaner"),
-  __("Raw data", "advanced-database-cleaner"),
-  __("Date", "advanced-database-cleaner"),
-  __("DB size (MB)", "advanced-database-cleaner"),
-  __("Tables added on:", "advanced-database-cleaner"),
-  __("view", "advanced-database-cleaner"),
-  __("Tables deleted on:", "advanced-database-cleaner"),
-  __("Unlock Database Analytics", "advanced-database-cleaner"),
-  __(
-    "Upgrade to the Premium to access comprehensive database analytics.",
-    "advanced-database-cleaner"
-  ),
-  __("Database size chart", "advanced-database-cleaner"),
-  __("Tables count chart", "advanced-database-cleaner"),
-  __("See exactly tables added/deleted", "advanced-database-cleaner"),
-  __("Custom date range filtering", "advanced-database-cleaner"),
-  __("View charts by day or month", "advanced-database-cleaner"),
-  __("Select tables ...", "advanced-database-cleaner"),
-  __("Search...", "advanced-database-cleaner"),
-  __("Unselect all", "advanced-database-cleaner"),
-  __("No tables match your search.", "advanced-database-cleaner"),
-  __("Total rows", "advanced-database-cleaner"),
-  __("Total columns", "advanced-database-cleaner"),
-  __("Rows", "advanced-database-cleaner"),
-  __("Columns", "advanced-database-cleaner"),
-  __("Table size", "advanced-database-cleaner"),
-  __("Please select a table!", "advanced-database-cleaner"),
-  __("Select one or more tables to view analytics.", "advanced-database-cleaner"),
-  __("Unlock Tables Analytics", "advanced-database-cleaner"),
-  __(
-    "Upgrade to the Premium to access comprehensive tables analytics.",
-    "advanced-database-cleaner"
-  ),
-  __("Tables size charts", "advanced-database-cleaner"),
-  __("Individual or multiple table selection", "advanced-database-cleaner"),
-  __("Track tables rows & columns changes", "advanced-database-cleaner"),
   __("Once", "advanced-database-cleaner"),
   __("Once hourly", "advanced-database-cleaner"),
   __("Twice daily", "advanced-database-cleaner"),
   __("Once daily", "advanced-database-cleaner"),
   __("Once weekly", "advanced-database-cleaner"),
   __("Once monthly", "advanced-database-cleaner"),
-  __("Days", "advanced-database-cleaner"),
   __("Preserve items from the last X days from being cleaned.", "advanced-database-cleaner"),
   __("Items", "advanced-database-cleaner"),
   __("(premium)", "advanced-database-cleaner"),
@@ -682,28 +836,8 @@ const translations = [
   __("Detailed tasks events logging", "advanced-database-cleaner"),
   __("See what was cleaned and when", "advanced-database-cleaner"),
   __("Clear events log anytime you want", "advanced-database-cleaner"),
-  __("Priority support", "advanced-database-cleaner"),
   __("Clear log", "advanced-database-cleaner"),
-  __("Next run", "advanced-database-cleaner"),
-  __("Action", "advanced-database-cleaner"),
-  __("Interval", "advanced-database-cleaner"),
-  __("Belongs to", "advanced-database-cleaner"),
-  __(
-    "The plugin or theme the item belongs to, determined after running a scan. If uncertain, an estimated likelihood (%) is shown, the higher the percentage, the more likely the item belongs to that plugin/theme.",
-    "advanced-database-cleaner"
-  ),
   __("Bulk actions", "advanced-database-cleaner"),
-  __("Scan", "advanced-database-cleaner"),
-  __(
-    "The scan allows the identification of the plugins or themes to which the items belong.",
-    "advanced-database-cleaner"
-  ),
-  __("Edit -Belongs to-", "advanced-database-cleaner"),
-  __(
-    "You can edit the scan results to correctly associate items with their respective plugins or themes if you are certain of their belonging.",
-    "advanced-database-cleaner"
-  ),
-  __("Delete the selected items.", "advanced-database-cleaner"),
   __("Posts", "advanced-database-cleaner"),
   __("Comments", "advanced-database-cleaner"),
   __("Meta / relations", "advanced-database-cleaner"),
@@ -764,6 +898,395 @@ const translations = [
   __("Saving...", "advanced-database-cleaner"),
   __("Save", "advanced-database-cleaner"),
   __("The retention by items is available in the premium version.", "advanced-database-cleaner"),
+  __("Overview", "advanced-database-cleaner"),
+  __("Tables analytics", "advanced-database-cleaner"),
+  __("Last analytics execution was successful on:", "advanced-database-cleaner"),
+  __("Last analytics execution failed on:", "advanced-database-cleaner"),
+  __(
+    "You disabled this module. Please enable it in the settings to track database changes.",
+    "advanced-database-cleaner"
+  ),
+  __(" (local time)", "advanced-database-cleaner"),
+  __("Note: Analytics data is refreshed every 24 hours.", "advanced-database-cleaner"),
+  __("Database size", "advanced-database-cleaner"),
+  __("Total tables", "advanced-database-cleaner"),
+  __("Tables added", "advanced-database-cleaner"),
+  __("Tables deleted", "advanced-database-cleaner"),
+  __("Daily", "advanced-database-cleaner"),
+  __("Monthly", "advanced-database-cleaner"),
+  __("Last 90 days", "advanced-database-cleaner"),
+  __("Please select valid start and end dates.", "advanced-database-cleaner"),
+  __("Start date cannot be after end date.", "advanced-database-cleaner"),
+  __("Quick ranges", "advanced-database-cleaner"),
+  __("From", "advanced-database-cleaner"),
+  __("To", "advanced-database-cleaner"),
+  __("Apply", "advanced-database-cleaner"),
+  __("Refresh analytics", "advanced-database-cleaner"),
+  __("Tables count", "advanced-database-cleaner"),
+  __("Raw data", "advanced-database-cleaner"),
+  __("Date", "advanced-database-cleaner"),
+  __("DB size (MB)", "advanced-database-cleaner"),
+  __("Tables added on:", "advanced-database-cleaner"),
+  __("view", "advanced-database-cleaner"),
+  __("Tables deleted on:", "advanced-database-cleaner"),
+  __("Unlock Database Analytics", "advanced-database-cleaner"),
+  __(
+    "Upgrade to the Premium to access comprehensive database analytics.",
+    "advanced-database-cleaner"
+  ),
+  __("Database size chart", "advanced-database-cleaner"),
+  __("Tables count chart", "advanced-database-cleaner"),
+  __("See exactly tables added/deleted", "advanced-database-cleaner"),
+  __("Custom date range filtering", "advanced-database-cleaner"),
+  __("View charts by day or month", "advanced-database-cleaner"),
+  __("Select tables ...", "advanced-database-cleaner"),
+  __("Search...", "advanced-database-cleaner"),
+  __("Unselect all", "advanced-database-cleaner"),
+  __("No tables match your search.", "advanced-database-cleaner"),
+  __("Total rows", "advanced-database-cleaner"),
+  __("Total columns", "advanced-database-cleaner"),
+  __("Rows", "advanced-database-cleaner"),
+  __("Columns", "advanced-database-cleaner"),
+  __("Table size", "advanced-database-cleaner"),
+  __("Please select a table!", "advanced-database-cleaner"),
+  __("Select one or more tables to view analytics.", "advanced-database-cleaner"),
+  __("Unlock Tables Analytics", "advanced-database-cleaner"),
+  __(
+    "Upgrade to the Premium to access comprehensive tables analytics.",
+    "advanced-database-cleaner"
+  ),
+  __("Tables size charts", "advanced-database-cleaner"),
+  __("Individual or multiple table selection", "advanced-database-cleaner"),
+  __("Track tables rows & columns changes", "advanced-database-cleaner"),
+  __("Loading MCP server settings...", "advanced-database-cleaner"),
+  __("MCP server is unavailable on this installation.", "advanced-database-cleaner"),
+  __(
+    "ADBC abilities, the MCP server, and the abilities CLI integration require WordPress 6.9 or later, PHP 8.2 or later, and the PHP OpenSSL extension. These modules are not loaded until the requirements are met.",
+    "advanced-database-cleaner"
+  ),
+  sprintf(
+    /* translators: 1: installed WordPress version, 2: installed PHP version. */
+    __("This site runs WordPress %1$s and PHP %2$s.", "advanced-database-cleaner"),
+    variable,
+    variable
+  ),
+  __(
+    "The PHP OpenSSL extension is not enabled. Ask your hosting provider to enable it.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Required MCP server files are missing. Reinstall a complete ADBC plugin package.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Update WordPress or ask your hosting provider to update PHP as needed, then reload this page.",
+    "advanced-database-cleaner"
+  ),
+  __("Access revoked from all connections.", "advanced-database-cleaner"),
+  __("Application Password connected.", "advanced-database-cleaner"),
+  __("Connection name saved.", "advanced-database-cleaner"),
+  __("Connection revoked.", "advanced-database-cleaner"),
+  __(
+    "The change may already have been saved. Refresh to verify the current connection access before trying again.",
+    "advanced-database-cleaner"
+  ),
+  __("MCP config", "advanced-database-cleaner"),
+  __("Revoke access from all connections?", "advanced-database-cleaner"),
+  __(
+    "All MCP connections will lose access to the plugin immediately. MCP clients must authenticate or be linked again. WordPress abilities access remains controlled by WordPress Application Passwords and administrator permissions.",
+    "advanced-database-cleaner"
+  ),
+  __("Revoke all access", "advanced-database-cleaner"),
+  __("Revoke this connection?", "advanced-database-cleaner"),
+  __(
+    "The AI agent will lose access immediately and must reconnect to use the plugin again.",
+    "advanced-database-cleaner"
+  ),
+  __("Revoke", "advanced-database-cleaner"),
+  __("Retry", "advanced-database-cleaner"),
+  __("Plugin abilities are deactivated", "advanced-database-cleaner"),
+  __("MCP server is deactivated", "advanced-database-cleaner"),
+  __(
+    'In Settings → Developer integrations, turn on "Expose plugin abilities" to use the WordPress Abilities API and the plugin\'s WP-CLI commands.',
+    "advanced-database-cleaner"
+  ),
+  __(
+    'In Settings → Developer integrations, turn on "Expose plugin abilities", then "Enable MCP server" to connect your AI agents through MCP.',
+    "advanced-database-cleaner"
+  ),
+  __(
+    'In Settings → Developer integrations, turn on "Enable MCP server" to connect your AI agents through MCP.',
+    "advanced-database-cleaner"
+  ),
+  __("Go to AI integration settings", "advanced-database-cleaner"),
+  __("Copied", "advanced-database-cleaner"),
+  __("Copy", "advanced-database-cleaner"),
+  __("Could not copy the value. Please copy it manually.", "advanced-database-cleaner"),
+  __("Choose an Application Password", "advanced-database-cleaner"),
+  __("Server URL", "advanced-database-cleaner"),
+  __(
+    "Connect AI agents to the plugin's tools to inspect and maintain your WordPress database through MCP. Choose Streamable HTTP in your AI client and enter this URL.",
+    "advanced-database-cleaner"
+  ),
+  __("MCP Application Passwords", "advanced-database-cleaner"),
+  __(
+    "For MCP clients that support an Authorization header but cannot use OAuth. Create a WordPress Application Password for your account, then allow it here.",
+    "advanced-database-cleaner"
+  ),
+  __("Manage application password", "advanced-database-cleaner"),
+  __("Refresh application passwords", "advanced-database-cleaner"),
+  __(
+    "Save to connect this Application Password. New connections start with read-only access to the plugin. Manage write access in Active connections.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "There are no unlinked Application Passwords. Create one in your WordPress profile, then refresh the list.",
+    "advanced-database-cleaner"
+  ),
+  __("Other", "advanced-database-cleaner"),
+  __("Approve access in WordPress", "advanced-database-cleaner"),
+  __(
+    "Sign in as a WordPress administrator. Choose Read-only for inspection or Full access for write tools, then approve the connection. Check your selection before approving.",
+    "advanced-database-cleaner"
+  ),
+  __("Add a custom connector", "advanced-database-cleaner"),
+  __(
+    "Open Customize → Connectors → + Add → Add custom connector. If the menu groups connector types, choose Custom → Web. Name it Advanced Database Cleaner, paste the server URL, and click Continue.",
+    "advanced-database-cleaner"
+  ),
+  __("Add the server", "advanced-database-cleaner"),
+  __(
+    "In Codex, open Settings → Plugins → MCP servers → Add server. Name it Advanced Database Cleaner, choose Streamable HTTP, and paste the server URL.",
+    "advanced-database-cleaner"
+  ),
+  __("Create an Application Password", "advanced-database-cleaner"),
+  __(
+    "In your WordPress profile, create an Application Password for this client and copy it when shown.",
+    "advanced-database-cleaner"
+  ),
+  __("Open your WordPress profile", "advanced-database-cleaner"),
+  __("Allow it in the plugin", "advanced-database-cleaner"),
+  __(
+    "Close this guide. Under MCP Application Passwords, refresh the list, select your password, and click Save. Then reopen this guide.",
+    "advanced-database-cleaner"
+  ),
+  __("Base64-encode your credentials", "advanced-database-cleaner"),
+  __(
+    "Remove spaces from the Application Password. Join your WordPress username, a colon (:), and that password as username:application-password. Base64-encode this entire string locally, without adding a newline. In the examples below, replace BASE64_CREDENTIALS with that encoded result. Do not encode the Basic prefix or paste the placeholder itself.",
+    "advanced-database-cleaner"
+  ),
+  __("Set the authentication header", "advanced-database-cleaner"),
+  __(
+    "Under Authentication, choose No sign in. In Request headers, set the header name to Authorization. For its value, enter Basic followed by one space and your Base64 result from the Base64 step, then click Add. Replace the placeholder in the example before pasting it.",
+    "advanced-database-cleaner"
+  ),
+  __("Enable the connector", "advanced-database-cleaner"),
+  __(
+    "Finish adding it, then enable it from the + → Connectors menu in your chat.",
+    "advanced-database-cleaner"
+  ),
+  __("Add the server from your terminal", "advanced-database-cleaner"),
+  __(
+    "Replace BASE64_CREDENTIALS in this command with the Base64 result from the Base64 step, then run it in your terminal. Keep the Basic prefix and the space after it:",
+    "advanced-database-cleaner"
+  ),
+  __("Check the connection", "advanced-database-cleaner"),
+  __(
+    "Open Claude Code and run /mcp to check that advanced-db-cleaner is connected.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "In Headers, set Key to Authorization. Set Value to Basic followed by one space and your Base64 result from the Base64 step. Replace the placeholder in the example before pasting it. Leave Bearer token env var empty.",
+    "advanced-database-cleaner"
+  ),
+  __("Save and connect", "advanced-database-cleaner"),
+  __(
+    "Save the server and select Restart if prompted. Use /mcp in a Codex chat to check the connection; no OAuth sign-in is needed for this method.",
+    "advanced-database-cleaner"
+  ),
+  __("Using the Codex CLI?", "advanced-database-cleaner"),
+  __(
+    "Instead of the app settings, add this entry to ~/.codex/config.toml without replacing your other settings. Replace BASE64_CREDENTIALS with your Base64 result, keeping the Basic prefix and space, then start a new Codex session.",
+    "advanced-database-cleaner"
+  ),
+  __("Configure your MCP client", "advanced-database-cleaner"),
+  __(
+    "Add a remote Streamable HTTP server using the URL above. If it offers separate Basic authentication fields, enter your username and Application Password directly; the client encodes them. For a custom header, use Authorization as its name and Basic followed by one space and your Base64 result as its value. Replace the placeholder before pasting the example.",
+    "advanced-database-cleaner"
+  ),
+  __("Connect and enable the tools", "advanced-database-cleaner"),
+  __(
+    "Save the server and connect. Enable its tools in your client. Write access is managed in the plugin’s Active connections list.",
+    "advanced-database-cleaner"
+  ),
+  __("Choose WordPress sign-in", "advanced-database-cleaner"),
+  __(
+    "Under Authentication, choose Sign in now. Under OAuth client, choose Use Claude’s published identity, then click Add and connect your account.",
+    "advanced-database-cleaner"
+  ),
+  __("Enable it in your chat", "advanced-database-cleaner"),
+  __(
+    "Enable the connector from + → Connectors in your chat. For Team or Enterprise accounts, an administrator may first need to add it under Organization settings → Connectors.",
+    "advanced-database-cleaner"
+  ),
+  __("Add and authenticate the server", "advanced-database-cleaner"),
+  __(
+    "Run these commands in your terminal to add ADBC for your user account and open WordPress sign-in:",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Open Claude Code and run /mcp to check that advanced-db-cleaner is connected. Use a current version that supports automatic OAuth client metadata discovery.",
+    "advanced-database-cleaner"
+  ),
+  __("Add a custom MCP server", "advanced-database-cleaner"),
+  __(
+    "In ChatGPT on the web, open Plugins → + → Add custom MCP server. Name it Advanced Database Cleaner and paste the server URL.",
+    "advanced-database-cleaner"
+  ),
+  __("Select OAuth", "advanced-database-cleaner"),
+  __(
+    "Choose OAuth, select CIMD for client registration, and choose none (public client) for token authentication. No client secret is needed.",
+    "advanced-database-cleaner"
+  ),
+  __("Create, install, and authorize", "advanced-database-cleaner"),
+  __(
+    "Review the risk notice, select I understand and want to continue, then click Create as a plugin. Install it and connect your account. In WordPress, sign in as an administrator, choose read-only or write access, and approve.",
+    "advanced-database-cleaner"
+  ),
+  __("Use it in a conversation", "advanced-database-cleaner"),
+  __(
+    "Type @ in your chat and select your installed plugin. Your workspace must allow custom MCP plugins.",
+    "advanced-database-cleaner"
+  ),
+  __("Authenticate", "advanced-database-cleaner"),
+  __(
+    "Leave the bearer-token and header fields empty. Save the server, select Restart if prompted, then select Authenticate for this server.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Run these commands in your terminal instead of using the app settings:",
+    "advanced-database-cleaner"
+  ),
+  __("Add a remote MCP server", "advanced-database-cleaner"),
+  __(
+    "In your client’s MCP settings, add Advanced Database Cleaner, choose Streamable HTTP, and paste the server URL.",
+    "advanced-database-cleaner"
+  ),
+  __("Choose OAuth", "advanced-database-cleaner"),
+  __(
+    "Choose OAuth with automatic Client ID Metadata Documents (CIMD) discovery and public-client token authentication (none). ADBC does not support dynamic client registration (DCR). If your client requires DCR, use an Application Password if it supports Basic authentication or custom headers.",
+    "advanced-database-cleaner"
+  ),
+  sprintf(
+    /* translators: %s: name of the value to copy. */
+    __("Copy %s", "advanced-database-cleaner"),
+    variable
+  ),
+  __("Could not copy. Please select and copy the text manually.", "advanced-database-cleaner"),
+  __("Authentication method", "advanced-database-cleaner"),
+  __("OAuth (recommended)", "advanced-database-cleaner"),
+  __("WP Application Password", "advanced-database-cleaner"),
+  __("For ChatGPT, follow the OAuth setup steps below.", "advanced-database-cleaner"),
+  __(
+    "Use your generated Application Password, not your WordPress login password. Follow the Base64 step below before using an Authorization header example.",
+    "advanced-database-cleaner"
+  ),
+  __("Try your first request", "advanced-database-cleaner"),
+  __(
+    "Use Advanced Database Cleaner to summarize my database health without making any changes.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Use a publicly reachable HTTPS site for this cloud connector. The client’s servers cannot reach a localhost address directly.",
+    "advanced-database-cleaner"
+  ),
+  __("How to connect an AI client", "advanced-database-cleaner"),
+  __("Choose your client and follow its setup steps.", "advanced-database-cleaner"),
+  __("Close guide", "advanced-database-cleaner"),
+  __(
+    'Before connecting, turn on "Expose plugin abilities" and "Enable MCP server" in Settings → Developer integrations.',
+    "advanced-database-cleaner"
+  ),
+  __("MCP server URL", "advanced-database-cleaner"),
+  __("Need help connecting an AI client?", "advanced-database-cleaner"),
+  __(
+    "Open a quick setup guide for Claude, ChatGPT, Codex, and other MCP clients.",
+    "advanced-database-cleaner"
+  ),
+  __("Authorized by:", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %s: Display name of the MCP connection. */
+    __("Write access for %s", "advanced-database-cleaner"),
+    variable
+  ),
+  sprintf(
+    /* translators: %s: Display name of the MCP connection. */
+    __("Actions for %s", "advanced-database-cleaner"),
+    variable
+  ),
+  __("Details", "advanced-database-cleaner"),
+  __("Rename", "advanced-database-cleaner"),
+  __("Refresh to verify current access.", "advanced-database-cleaner"),
+  __("Save name", "advanced-database-cleaner"),
+  __(
+    "Leave blank to use the default name. Save name applies immediately.",
+    "advanced-database-cleaner"
+  ),
+  __("Active connections", "advanced-database-cleaner"),
+  __(
+    "Connections can read tool results. Write access allows changes using the tools available in your plugin version. Even with write access enabled, modification actions still require approval in your AI chat.",
+    "advanced-database-cleaner"
+  ),
+  sprintf(
+    /* translators: %d: number of active connections */
+    __("Active connections: %d", "advanced-database-cleaner"),
+    variable
+  ),
+  __("Refresh connections", "advanced-database-cleaner"),
+  __(
+    "No active MCP connections. Connect an MCP client to see it here.",
+    "advanced-database-cleaner"
+  ),
+  __("Revoke access from all connections", "advanced-database-cleaner"),
+  __("Database change log cleared.", "advanced-database-cleaner"),
+  __(
+    "Choose a valid start and end date. The start must not be after the end.",
+    "advanced-database-cleaner"
+  ),
+  __("Clear the database change log?", "advanced-database-cleaner"),
+  __("This removes all retained entries.", "advanced-database-cleaner"),
+  __("Show filters", "advanced-database-cleaner"),
+  __("Hide filters", "advanced-database-cleaner"),
+  __("Date range (UTC)", "advanced-database-cleaner"),
+  __("Start date", "advanced-database-cleaner"),
+  __("End date", "advanced-database-cleaner"),
+  __("Operation", "advanced-database-cleaner"),
+  __("All operations", "advanced-database-cleaner"),
+  __("Source", "advanced-database-cleaner"),
+  __("Outcome", "advanced-database-cleaner"),
+  __("No database changes found", "advanced-database-cleaner"),
+  __(
+    "Database maintenance results will appear here after an operation runs.",
+    "advanced-database-cleaner"
+  ),
+  __("Download JSON", "advanced-database-cleaner"),
+  __(
+    "Up to 1,000 entries or 5 MiB are retained. New SQL excerpts are limited to 4 KiB per statement.",
+    "advanced-database-cleaner"
+  ),
+  __("Date / time (UTC)", "advanced-database-cleaner"),
+  __("User", "advanced-database-cleaner"),
+  __("Processed items", "advanced-database-cleaner"),
+  __("Affected rows", "advanced-database-cleaner"),
+  __("Duration", "advanced-database-cleaner"),
+  __("Database operations log", "advanced-database-cleaner"),
+  __("View details", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: 1: Type of database change, 2: Time it occurred. */
+    __("View details: %1$s at %2$s", "advanced-database-cleaner"),
+    variable,
+    variable
+  ),
   __("System info", "advanced-database-cleaner"),
   __("Errors log", "advanced-database-cleaner"),
   __("WP debug", "advanced-database-cleaner"),
@@ -771,12 +1294,171 @@ const translations = [
   __("Are you sure you want to clear the log?", "advanced-database-cleaner"),
   __("Empty!", "advanced-database-cleaner"),
   __("Download file", "advanced-database-cleaner"),
-  __("Copied", "advanced-database-cleaner"),
-  __("Copy", "advanced-database-cleaner"),
   __(
     "(All dates/times in the logs are shown in your server's time zone)",
     "advanced-database-cleaner"
   ),
+  __("Action", "advanced-database-cleaner"),
+  __("Reason", "advanced-database-cleaner"),
+  __("Time", "advanced-database-cleaner"),
+  __("Method", "advanced-database-cleaner"),
+  __("WordPress native cleanup", "advanced-database-cleaner"),
+  __("Site ID", "advanced-database-cleaner"),
+  __("Confirmed changed rows", "advanced-database-cleaner"),
+  __("Failed items", "advanced-database-cleaner"),
+  __("Insert ID", "advanced-database-cleaner"),
+  __("Error code", "advanced-database-cleaner"),
+  __("Job ID", "advanced-database-cleaner"),
+  __("Batch", "advanced-database-cleaner"),
+  __("Automation ID", "advanced-database-cleaner"),
+  __("Operation ID", "advanced-database-cleaner"),
+  __("Targeted rows", "advanced-database-cleaner"),
+  __("Skipped items", "advanced-database-cleaner"),
+  __("Database change details", "advanced-database-cleaner"),
+  __(
+    "Some targets were processed, while others could not be processed. Review the details before retrying.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The transaction was rolled back. Statement-level counts may describe rows changed before rollback; those changes were not committed.",
+    "advanced-database-cleaner"
+  ),
+  __("Executed SQL", "advanced-database-cleaner"),
+  __(
+    "SQL text was not retained because it could not be safely masked.",
+    "advanced-database-cleaner"
+  ),
+  __("Only a truncated SQL excerpt was retained.", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: 1: SQL bytes retained in the log, 2: Total SQL bytes after masking. */
+    __("Stored %1$d of %2$d masked SQL bytes.", "advanced-database-cleaner"),
+    variable,
+    variable
+  ),
+  __("No direct SQL statements were retained for this operation.", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %d: Number of SQL statements omitted from the log entry. */
+    __(
+      "%d additional SQL statements were omitted to limit the log entry size.",
+      "advanced-database-cleaner"
+    ),
+    variable
+  ),
+  __("Full entry", "advanced-database-cleaner"),
+  __("Next run", "advanced-database-cleaner"),
+  __("Interval", "advanced-database-cleaner"),
+  __("Belongs to", "advanced-database-cleaner"),
+  __(
+    "The plugin or theme the item belongs to, determined after running a scan. If uncertain, an estimated likelihood (%) is shown, the higher the percentage, the more likely the item belongs to that plugin/theme.",
+    "advanced-database-cleaner"
+  ),
+  __("Scan", "advanced-database-cleaner"),
+  __(
+    "The scan allows the identification of the plugins or themes to which the items belong.",
+    "advanced-database-cleaner"
+  ),
+  __("Edit -Belongs to-", "advanced-database-cleaner"),
+  __(
+    "You can edit the scan results to correctly associate items with their respective plugins or themes if you are certain of their belonging.",
+    "advanced-database-cleaner"
+  ),
+  __("Delete the selected items.", "advanced-database-cleaner"),
+  __("Autoload fix actions", "advanced-database-cleaner"),
+  __("Undo latest fix", "advanced-database-cleaner"),
+  __(
+    "Another autoload operation is running. Please wait and try again.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The operation could not be verified. Recovery data is preserved. Reopen Autoload fix to check its state before retrying.",
+    "advanced-database-cleaner"
+  ),
+  __("No autoload fix needed", "advanced-database-cleaner"),
+  __("Undo latest autoload fix", "advanced-database-cleaner"),
+  __("Failure", "advanced-database-cleaner"),
+  __("Restoring autoload settings...", "advanced-database-cleaner"),
+  __("Optimizing autoloaded options...", "advanced-database-cleaner"),
+  __("Reviewing the autoload restore point...", "advanced-database-cleaner"),
+  __("Analyzing autoloaded options...", "advanced-database-cleaner"),
+  __(
+    "Restoring saved autoload flags and verifying the result. Please keep this page open until the operation finishes.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Updating autoload flags and verifying the resulting autoload size. Please keep this page open until the operation finishes.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Checking the saved autoload flags before preparing the undo review.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Reviewing autoloaded options and calculating the potential size reduction. Please wait while the analysis runs",
+    "advanced-database-cleaner"
+  ),
+  __("Your autoload size is below the warning threshold.", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: 1: number of options, 2: estimated size reduction, 3: estimated new autoload size. */
+    _n(
+      "We found %1$s option that can have autoload turned off. This would reduce autoloaded data by about %2$s, bringing your total autoload size to %3$s.",
+      "We found %1$s options that can have autoload turned off. This would reduce autoloaded data by about %2$s, bringing your total autoload size to %3$s.",
+      variable,
+      "advanced-database-cleaner"
+    ),
+    variable,
+    variable,
+    variable
+  ),
+  __(
+    "Your autoload size is above the warning threshold, but no automatic fix is currently available.",
+    "advanced-database-cleaner"
+  ),
+  __("Autoload fix review", "advanced-database-cleaner"),
+  __("Options to update", "advanced-database-cleaner"),
+  __("Estimated autoload reduction", "advanced-database-cleaner"),
+  __("Estimated new autoload size", "advanced-database-cleaner"),
+  __(
+    "This would bring your autoload size below the warning threshold.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The estimated size will remain above the autoload warning threshold. WordPress core options are protected and will remain unchanged.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "An interrupted operation needs recovery. Use Undo latest fix before starting another fix.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "The previous fix has already processed the eligible options. Another automatic fix is currently unavailable.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Restore the original autoload flags saved by the latest fix? This also replaces flags changed afterward. Option values are preserved.",
+    "advanced-database-cleaner"
+  ),
+  __("No autoload restore point is available.", "advanced-database-cleaner"),
+  sprintf(
+    /* translators: %s: Formatted number of options changed. */
+    __("Options changed: %s", "advanced-database-cleaner"),
+    variable
+  ),
+  sprintf(
+    /* translators: 1: Formatted autoload size before the change, 2: Size after the change. */
+    __("Autoload size: %1$s → %2$s", "advanced-database-cleaner"),
+    variable,
+    variable
+  ),
+  __(
+    "Autoload was reduced, but the warning threshold has not been reached. The latest fix can be undone.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Some options could not be restored. Their recovery data has been retained.",
+    "advanced-database-cleaner"
+  ),
+  __("Confirm fix", "advanced-database-cleaner"),
+  __("Confirm undo", "advanced-database-cleaner"),
   __("Option name", "advanced-database-cleaner"),
   __(
     "Indicates whether an option is autoloaded or not. Values to autoload are: yes, on, auto, auto-on. Values to not autoload are: no, off, auto-off",
@@ -929,6 +1611,8 @@ const translations = [
     "The scan process identifies to which plugin/theme a table, option, or other element belongs. You can customize this process using the scan settings below.",
     "advanced-database-cleaner"
   ),
+  __("Developer integrations", "advanced-database-cleaner"),
+  __("Control how other tools and services can use the plugin.", "advanced-database-cleaner"),
   __("Other settings", "advanced-database-cleaner"),
   __("Other settings to configure the plugin behavior.", "advanced-database-cleaner"),
   __("Remote scan credits", "advanced-database-cleaner"),
@@ -1215,12 +1899,35 @@ const translations = [
   __("of", "advanced-database-cleaner"),
   __("Public", "advanced-database-cleaner"),
   __("Non-public", "advanced-database-cleaner"),
+  __(
+    "Plugin abilities, WP-CLI integration and MCP require WordPress 6.9 or later, PHP 8.2 or later, OpenSSL and the integration files included with the plugin.",
+    "advanced-database-cleaner"
+  ),
+  __(
+    "Developer integration settings are unavailable. Check the MCP server page for details.",
+    "advanced-database-cleaner"
+  ),
+  __("Expose plugin abilities", "advanced-database-cleaner"),
+  __(
+    "Allows compatible plugins and services to use the plugin through the WordPress Abilities API. Disabling abilities also disables the MCP server and the plugin's WP-CLI commands, and cancels queued integration jobs.",
+    "advanced-database-cleaner"
+  ),
+  __("Also enables the plugin's WP-CLI commands.", "advanced-database-cleaner"),
+  __("Enable MCP server", "advanced-database-cleaner"),
+  __(
+    "Lets AI agents connect to the plugin's MCP server. Requires exposed abilities. Disabling MCP revokes its connections and cancels queued MCP jobs.",
+    "advanced-database-cleaner"
+  ),
+  __('Enable "Expose plugin abilities" above before enabling MCP.', "advanced-database-cleaner"),
+  __("HTTPS is required before the MCP server can be enabled.", "advanced-database-cleaner"),
+  __(
+    "Connect your AI agents and manage their access on the MCP server page.",
+    "advanced-database-cleaner"
+  ),
   __("Invalid", "advanced-database-cleaner"),
-  __("Disabled", "advanced-database-cleaner"),
   __("Invalid item ID", "advanced-database-cleaner"),
   __("Item name mismatch", "advanced-database-cleaner"),
   __("Site inactive", "advanced-database-cleaner"),
-  __("Lifetime", "advanced-database-cleaner"),
   _x(
     "F j, Y",
     "License expiration date format (e.g. December 10, 2025)",
@@ -1557,6 +2264,7 @@ const translations = [
   __("The server is scanning your items...", "advanced-database-cleaner"),
   __("Info: the remote scan is taking more than expected!", "advanced-database-cleaner"),
   __("Scan completed", "advanced-database-cleaner"),
+  __("Could not check the scan status. Reload the page to try again.", "advanced-database-cleaner"),
   __("Scan stopped", "advanced-database-cleaner"),
   __("Scan timeout occurred!", "advanced-database-cleaner"),
   __(
@@ -1597,12 +2305,9 @@ const translations = [
   ),
   __("Scan details", "advanced-database-cleaner"),
   __("Retrying...", "advanced-database-cleaner"),
-  __("Retry", "advanced-database-cleaner"),
   __("Total timeouts:", "advanced-database-cleaner"),
   __("Total forced timeouts:", "advanced-database-cleaner"),
   __("files", "advanced-database-cleaner"),
-  __("Show filters", "advanced-database-cleaner"),
-  __("Hide filters", "advanced-database-cleaner"),
   sprintf(
     /* translators: %s: number of cron jobs with no action */
     _n(

@@ -8,7 +8,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 class ADBC_Uninstall {
 
 	// List of all ADBC options to delete on uninstall
-	private static $adbc_options = [ 
+	private static $adbc_options = [
 		'adbc_plugin_settings' => 'all',
 		'adbc_plugin_automation' => 'all',
 		'adbc_plugin_conflict_notice' => 'all',
@@ -32,14 +32,14 @@ class ADBC_Uninstall {
 	];
 
 	// List of all ADBC transients to delete on uninstall
-	private static $adbc_transients = [ 
+	private static $adbc_transients = [
 		'adbc_plugin_tables_to_repair' => 'all',
 		'adbc_plugin_innodb_conversion_lock' => 'all',
 		'adbc_plugin_post_types_dict_updated' => 'premium_pro',
 	];
 
 	// List of all ADBC cron jobs to unschedule on uninstall
-	private static $adbc_cron_jobs = [ 
+	private static $adbc_cron_jobs = [
 		'adbc_cron_analytics' => 'premium_pro',
 		'adbc_cron_automation' => 'all',
 		'edd_sl_sdk_weekly_license_check_advanced-database-cleaner-premium' => 'premium',
@@ -360,10 +360,35 @@ class ADBC_Uninstall {
 	 * @return void
 	 */
 	private static function delete_all_plugin_data() {
+		self::delete_mcp_data();
 		self::delete_adbc_upload_folder();
 		self::delete_all_adbc_transients();
 		self::delete_all_adbc_options();
 		self::unschedule_all_cron_jobs();
+	}
+
+	/** Remove only our records and actions; the shared queue tables belong to all users. */
+	private static function delete_mcp_data() {
+		global $wpdb;
+		$library = __DIR__ . '/includes/mcp/vendor/woocommerce/action-scheduler/action-scheduler.php';
+		if ( ! function_exists( 'as_unschedule_all_actions' ) && is_readable( $library ) && version_compare( PHP_VERSION, '7.2', '>=' ) ) {
+			require_once $library;
+		}
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( '', [], 'adbc-mcp' );
+		}
+		$after = 0;
+		do {
+			$rows = $wpdb->get_results( $wpdb->prepare( "SELECT option_id,option_name FROM {$wpdb->options} WHERE option_id > %d AND (option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s) ORDER BY option_id LIMIT 100", $after, $wpdb->esc_like( 'adbc_mcp_' ) . '%', $wpdb->esc_like( '_transient_adbc_mcp_' ) . '%', $wpdb->esc_like( '_transient_timeout_adbc_mcp_' ) . '%' ), ARRAY_A );
+			foreach ( $rows ?: [] as $row ) {
+				$after = (int) $row['option_id'];
+				if ( preg_match( '/^_transient_(?:timeout_)?(adbc_mcp_.*)$/', $row['option_name'], $match ) ) {
+					delete_transient( $match[1] );
+				} else {
+					delete_option( $row['option_name'] );
+				}
+			}
+		} while ( count( $rows ?: [] ) === 100 );
 	}
 
 	/**

@@ -55,7 +55,7 @@ abstract class ADBC_Cleanup_Duplicated_Meta_Handler_Base extends ADBC_Abstract_C
 		return true;
 	}
 	protected function sortable_columns() {
-		return [ 
+		return [
 			'meta_id',
 			'umeta_id',
 			'meta_key',
@@ -65,7 +65,7 @@ abstract class ADBC_Cleanup_Duplicated_Meta_Handler_Base extends ADBC_Abstract_C
 		];
 	}
 	protected function delete_helper() {
-		return function ($mid) {
+		return function ( $mid ) {
 			return (bool) delete_metadata_by_mid( $this->meta_type(), $mid );
 		};
 	}
@@ -217,7 +217,7 @@ class ADBC_Cleanup_Duplicated_Usermeta_Handler extends ADBC_Cleanup_Duplicated_M
 			)
 		";
 
-		$deleted = $wpdb->query( $sql );
+		$deleted = ADBC_Change_Log::query( $sql );
 
 		return $deleted;
 

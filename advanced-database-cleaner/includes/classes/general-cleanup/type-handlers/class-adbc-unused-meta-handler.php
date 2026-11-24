@@ -34,7 +34,7 @@ abstract class ADBC_Cleanup_Unused_Meta_Handler_Base extends ADBC_Abstract_Clean
 		return true;
 	}
 	protected function sortable_columns() {
-		return [ 
+		return [
 			'meta_id',
 			'umeta_id',
 			'meta_key',
@@ -44,7 +44,7 @@ abstract class ADBC_Cleanup_Unused_Meta_Handler_Base extends ADBC_Abstract_Clean
 		];
 	}
 	protected function delete_helper() {
-		return function ($mid) {
+		return function ( $mid ) {
 			return delete_metadata_by_mid( $this->meta_type(), $mid );
 		};
 	}
@@ -218,7 +218,7 @@ class ADBC_Cleanup_Unused_Usermeta_Handler extends ADBC_Cleanup_Unused_Meta_Hand
 			)
 		";
 
-		$deleted = $wpdb->query( $sql );
+		$deleted = ADBC_Change_Log::query( $sql );
 
 		return $deleted;
 
@@ -293,7 +293,7 @@ class ADBC_Cleanup_Oembed_Cache_Meta_Handler extends ADBC_Abstract_Cleanup_Handl
 		return true;
 	}
 	protected function sortable_columns() {
-		return [ 
+		return [
 			'meta_id',
 			'meta_key',
 			'meta_value',
@@ -302,7 +302,7 @@ class ADBC_Cleanup_Oembed_Cache_Meta_Handler extends ADBC_Abstract_Cleanup_Handl
 		];
 	}
 	protected function delete_helper() {
-		return function ($mid) {
+		return function ( $mid ) {
 			return delete_metadata_by_mid( 'post', $mid );
 		};
 	}

@@ -60,9 +60,9 @@ class ADBC_Options {
 				// Only process the current batch if it's within the desired page range
 				if ( $currentRecord >= $startRecord && $currentRecord < $endRecord ) {
 
-					$options_list[] = [ 
+					$options_list[] = [
 						// This id is used to identify the option in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'options',
 							'site_id' => (int) $option->site_id,
 							'id' => (int) $option->option_id,
@@ -96,7 +96,7 @@ class ADBC_Options {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_options / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $options_list,
 			'total_items' => $total_options,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -124,7 +124,7 @@ class ADBC_Options {
 		/* ──────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
 		 * ─────────────────────────────────────────────────────────────*/
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'option_name' => '`name`',
 			'size' => '`size`',
 			'autoload' => '`autoload`',
@@ -220,7 +220,7 @@ class ADBC_Options {
 		/* ──────────────────────────────────────────────────────────────
 		 * Assemble the dynamic WHERE parts
 		 * ─────────────────────────────────────────────────────────────*/
-		$where = [ 
+		$where = [
 			'`option_name` NOT LIKE %s',   // skip transients
 			'`option_name` NOT LIKE %s',   // skip site transients
 		];
@@ -340,7 +340,7 @@ class ADBC_Options {
 		/* ──────────────────────────────────────────────────────────────
 		 * Assemble the dynamic WHERE parts
 		 * ─────────────────────────────────────────────────────────────*/
-		$where = [ 
+		$where = [
 			'`option_name` NOT LIKE %s',   // skip site transients
 			'`option_name` NOT LIKE %s',
 		];
@@ -427,36 +427,11 @@ class ADBC_Options {
 	 * @return array Array with autoloaded size and health status.
 	 */
 	public static function count_autoload_size_using_sql() {
-
-		global $wpdb;
-		$autoload_values = self::get_values_to_autoload();
-
-		// Build "%s,%s,%s" for $wpdb->prepare()
-		$in_placeholders = implode( ',', array_fill( 0, count( $autoload_values ), '%s' ) );
-
-		$sql = $wpdb->prepare(
-			"SELECT
-				COALESCE(
-					SUM(
-						CASE WHEN autoload IN ($in_placeholders)
-							THEN LENGTH(option_value)
-						END
-					),
-					0
-				)
-         	FROM {$wpdb->options}
-			",
-			...$autoload_values
-		);
-
-		$autoloaded_size = (int) $wpdb->get_var( $sql );
-		$autoload_limit_in_bytes = self::get_autoload_warning_limit();
-		$autoload_health = $autoloaded_size > $autoload_limit_in_bytes ? 'bad' : 'good';
-
-		return [ 
-			'autoloaded_size' => ADBC_Common_Utils::format_bytes( $autoloaded_size ),
-			'autoload_health' => $autoload_health,
-			'autoload_limit' => ADBC_Common_Utils::format_bytes( $autoload_limit_in_bytes ),
+		$health = ADBC_Autoload_Service::health();
+		return [
+			'autoloaded_size' => ADBC_Common_Utils::format_bytes( $health['size_bytes'] ),
+			'autoload_health' => $health['status'] === 'good' ? 'good' : 'bad',
+			'autoload_limit' => ADBC_Common_Utils::format_bytes( $health['threshold_bytes'] ),
 		];
 	}
 
@@ -467,20 +442,7 @@ class ADBC_Options {
 	 * @return int Autoload warning limit in bytes.
 	 */
 	public static function get_autoload_warning_limit() {
-
-		// Get the autoload limit from WordPress filter (allows customization via site_status_autoloaded_options_size_limit)
-		// This filter was introduced in WordPress 6.6.0, so we check version for backward compatibility
-		$default_limit = 800000; // 800 KB - WordPress default recommendation
-		global $wp_version;
-		if ( version_compare( $wp_version, '6.6.0', '>=' ) ) {
-			// WordPress 6.6.0+ - use the filter (allows customization)
-			$autoload_limit_bytes = apply_filters( 'site_status_autoloaded_options_size_limit', $default_limit );
-		} else {
-			// WordPress < 6.6.0 - use default limit (filter doesn't exist yet)
-			$autoload_limit_bytes = $default_limit;
-		}
-
-		return $autoload_limit_bytes;
+		return ADBC_Autoload_Service::threshold();
 	}
 
 	/**
@@ -688,11 +650,13 @@ class ADBC_Options {
 	 * @return array An array of options names that were not processed.
 	 */
 	public static function set_autoload_to_no( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'set_autoload_to_no_options', [ 'items_type' => 'options', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'off' : 'no';
-		$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
-		return $not_processed;
+			$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'off' : 'no';
+			$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
+			return $not_processed;
 
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -703,11 +667,13 @@ class ADBC_Options {
 	 * @return array An array of options names that were not processed.
 	 */
 	public static function set_autoload_to_yes( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'set_autoload_to_yes_options', [ 'items_type' => 'options', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'on' : 'yes';
-		$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
-		return $not_processed;
+			$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'on' : 'yes';
+			$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
+			return $not_processed;
 
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -739,7 +705,7 @@ class ADBC_Options {
 				...array_merge( [ $autoload_value ], $ids )
 			);
 
-			$wpdb->query( $sql );
+			ADBC_Change_Log::query( $sql );
 
 			// Clear the object cache so WordPress picks up the new autoload flags
 			wp_cache_delete( 'alloptions', 'options' );
@@ -763,15 +729,17 @@ class ADBC_Options {
 	 * @return array An array of option names that were not processed (not deleted).
 	 */
 	public static function delete_options( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'delete_options', [ 'items_type' => 'options', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' ) {
-			return self::delete_options_native( $grouped_selected );
-		}
+			if ( $cleanup_method === 'native' ) {
+				return self::delete_options_native( $grouped_selected );
+			}
 
-		return self::delete_options_sql( $grouped_selected );
+			return self::delete_options_sql( $grouped_selected );
 
+		}, [ 'failures' => true ] );
 	}
 
 	/**
@@ -849,7 +817,7 @@ class ADBC_Options {
 			// Bulk delete.
 			$sql = "DELETE FROM {$wpdb->options} WHERE option_id IN ($placeholders)";
 			$sql = $wpdb->prepare( $sql, ...$ids );
-			$wpdb->query( $sql );
+			ADBC_Change_Log::query( $sql );
 
 			// Identify any remaining rows (not processed) deterministically.
 			$check_sql = "SELECT option_name FROM {$wpdb->options} WHERE option_id IN ($placeholders)";

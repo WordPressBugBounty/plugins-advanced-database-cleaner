@@ -61,9 +61,9 @@ class ADBC_Transients {
 				// Only process the current batch if it's within the desired page range
 				if ( $currentRecord >= $startRecord && $currentRecord < $endRecord ) {
 
-					$transients_list[] = [ 
+					$transients_list[] = [
 						// This id is used to identify the option in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'transients',
 							'site_id' => (int) $transient->site_id,
 							'id' => (int) $transient->id,
@@ -101,7 +101,7 @@ class ADBC_Transients {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_transients / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $transients_list,
 			'total_items' => $total_transients,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -131,7 +131,7 @@ class ADBC_Transients {
 		/* ──────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
 		 * ─────────────────────────────────────────────────────────────*/
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'transient_name' => '`name`',
 			'size' => '`size`',
 			'autoload' => '`autoload`',
@@ -282,9 +282,9 @@ class ADBC_Transients {
 		$length = self::TRUNCATE_LENGTH;
 		$site_id = get_current_blog_id();
 
-		$templates = [ 
+		$templates = [
 			// Regular transients from options table
-			[ 
+			[
 				'sql' => "
 					SELECT  a.option_name AS name,
 							a.option_id  AS id,
@@ -312,7 +312,7 @@ class ADBC_Transients {
 				'value_col' => 'a.option_value',
 			],
 			// Site transients from options table
-			[ 
+			[
 				'sql' => "
 					SELECT  a.option_name AS name,
 							a.option_id  AS id,
@@ -343,7 +343,7 @@ class ADBC_Transients {
 
 		// Add sitemeta template for multisite main site
 		if ( is_multisite() && is_main_site( $site_id ) ) {
-			$templates[] = [ 
+			$templates[] = [
 				'sql' => "
 					SELECT  a.meta_key      AS name,
 						a.meta_id       AS id,
@@ -854,15 +854,17 @@ class ADBC_Transients {
 	 * @return array An array of transients names that were not processed.
 	 */
 	public static function delete_transients( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'delete_transients', [ 'items_type' => 'transients', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' ) {
-			return self::delete_transients_native( $grouped_selected );
-		}
+			if ( $cleanup_method === 'native' ) {
+				return self::delete_transients_native( $grouped_selected );
+			}
 
-		return self::delete_transients_sql( $grouped_selected );
+			return self::delete_transients_sql( $grouped_selected );
 
+		}, [ 'failures' => true ] );
 	}
 
 	/**
@@ -912,7 +914,7 @@ class ADBC_Transients {
 
 								$sql = "DELETE FROM {$wpdb->sitemeta} WHERE meta_key IN ( %s, %s )";
 
-								$deleted_rows = $wpdb->query(
+								$deleted_rows = ADBC_Change_Log::query(
 									$wpdb->prepare( $sql, $full_name, $timeout_key )
 								);
 
@@ -1014,7 +1016,7 @@ class ADBC_Transients {
 
 				$sql = "DELETE FROM {$wpdb->options} WHERE option_name IN ($placeholders)";
 				$sql = $wpdb->prepare( $sql, ...$option_keys );
-				$wpdb->query( $sql );
+				ADBC_Change_Log::query( $sql );
 
 				$check_sql = "SELECT option_name FROM {$wpdb->options} WHERE option_name IN ($placeholders)";
 				$check_sql = $wpdb->prepare( $check_sql, ...$option_keys );
@@ -1034,7 +1036,7 @@ class ADBC_Transients {
 
 				$sql = "DELETE FROM {$wpdb->sitemeta} WHERE meta_key IN ($placeholders)";
 				$sql = $wpdb->prepare( $sql, ...$sitemeta_keys );
-				$wpdb->query( $sql );
+				ADBC_Change_Log::query( $sql );
 
 				$check_sql = "SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key IN ($placeholders)";
 				$check_sql = $wpdb->prepare( $check_sql, ...$sitemeta_keys );
@@ -1063,11 +1065,13 @@ class ADBC_Transients {
 	 * @return array An array of transients names that were not processed.
 	 */
 	public static function set_autoload_to_no( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'set_autoload_to_no_transients', [ 'items_type' => 'transients', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'off' : 'no';
-		$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
-		return $not_processed;
+			$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'off' : 'no';
+			$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
+			return $not_processed;
 
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -1078,11 +1082,13 @@ class ADBC_Transients {
 	 * @return array An array of transients names that were not processed.
 	 */
 	public static function set_autoload_to_yes( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'set_autoload_to_yes_transients', [ 'items_type' => 'transients', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'on' : 'yes';
-		$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
-		return $not_processed;
+			$autoload_value = function_exists( 'wp_autoload_values_to_autoload' ) ? 'on' : 'yes';
+			$not_processed = self::set_autoload( $grouped_selected, $autoload_value );
+			return $not_processed;
 
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -1104,7 +1110,7 @@ class ADBC_Transients {
 
 			// get only ids where found_in !== "sitemeta" because sitemeta transients doesn't have autoload
 			$ids = array_column(
-				array_filter( $group, function ($item) {
+				array_filter( $group, function ( $item ) {
 					return $item['found_in'] !== 'sitemeta';
 				} ),
 				'id'
@@ -1124,7 +1130,7 @@ class ADBC_Transients {
 				...array_merge( [ $autoload_value ], $ids )
 			);
 
-			$wpdb->query( $sql );
+			ADBC_Change_Log::query( $sql );
 
 			// Clear the object cache so WordPress picks up the new autoload flags
 			wp_cache_delete( 'alloptions', 'options' );

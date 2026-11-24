@@ -12,7 +12,8 @@ if ( ! defined( 'ABSPATH' ) )
 class ADBC_Settings_Validator {
 
 	private const MIN_FILE_AND_DATABASE_LINES_BATCHES = 100; // 100 lines of rows to process at once
-	private const MAX_FILE_AND_DATABASE_LINES_BATCHES = 1000000; // 1 million lines or rows to process at once
+	private const MAX_FILE_LINES_BATCHES = 1000000; // 1 million lines to process at once
+	private const MAX_DATABASE_ROWS_BATCHES = 10000000; // 10 million rows to process at once
 	private const MIN_FILE_CONTENT_CHUNKS = 50; // 50KB
 	private const MAX_FILE_CONTENT_CHUNKS = 10240; // 10MB
 	private const MIN_MAX_EXECUTION_TIME = 30;
@@ -100,7 +101,7 @@ class ADBC_Settings_Validator {
 
 		switch ( $key ) {
 			case 'file_lines_batch':
-				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_FILE_AND_DATABASE_LINES_BATCHES );
+				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_FILE_LINES_BATCHES );
 			case 'file_content_chunks':
 				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_CONTENT_CHUNKS, self::MAX_FILE_CONTENT_CHUNKS );
 			case 'scan_max_execution_time':
@@ -177,7 +178,7 @@ class ADBC_Settings_Validator {
 		foreach ( $api_scan_balance as $scan_key => $value ) {
 			if ( ! in_array( $scan_key, array( 'quota', 'usage', 'ttl', 'total_quota', 'total_consumed', 'updated_at' ), true ) )
 				return false;
-			if ( ! is_int( $value ) && $value < 0 )
+			if ( ! is_int( $value ) || $value < 0 )
 				return false;
 		}
 		return true;
@@ -272,7 +273,7 @@ class ADBC_Settings_Validator {
 	public static function is_performance_settings_valid( $key, $value ) {
 		switch ( $key ) {
 			case 'database_rows_batch':
-				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_FILE_AND_DATABASE_LINES_BATCHES );
+				return ADBC_Common_Validator::is_number_between_min_and_max( $value, self::MIN_FILE_AND_DATABASE_LINES_BATCHES, self::MAX_DATABASE_ROWS_BATCHES );
 			case 'sql_or_native_cleanup_method':
 				return in_array( $value, [ 'sql', 'native' ], true );
 			default:

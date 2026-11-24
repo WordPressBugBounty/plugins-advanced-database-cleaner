@@ -5,13 +5,27 @@ Tags: clean, database, optimize, performance, postmeta
 Requires at least: 5.0.0
 Requires PHP: 7.0
 Tested up to: 7.1
-Stable tag: 4.2.0
+Stable tag: 4.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Clean database by deleting orphaned data such as 'revisions', 'expired transients', optimize database and more...
 
 == Description ==
+
+<pre>+-------------------------------------------------------+
+| 🔥 <strong>Coming soon! Manage and clean up multiple</strong>        &#9;|
+| <strong>WordPress sites with WPVitals</strong> 🔥                    &#9;|
+|                                                       |
+| <a href="https://wpvitals.app/">WPVitals</a> brings the sites where you use Advanced      |
+| Database Cleaner into one dashboard. Choose a site    |
+| and clean up its database without opening a           |
+| separate WordPress admin for each one.                |
+|                                                       |
+| 🚀 We’re aiming to launch in mid-December 2026.     &#9;|
+| <strong><a href="https://wpvitals.app/">Sign up for a launch-day email</a></strong> to hear when           |
+| WPVitals goes live.                                   |
++-------------------------------------------------------+</pre>
 
 Advanced Database Cleaner is a complete WordPress optimization plugin that helps you clean up database clutter and optimize database performance by removing unused data such as old revisions, auto drafts, spam comments, expired transients, unused post meta, duplicated post meta, unused user meta, etc. 
 
@@ -269,6 +283,36 @@ This section describes how to install the plugin. In general, there are 3 ways t
 21. Settings page
 
 == Changelog ==
+
+<pre>+-------------------------------------------------------+
+| 🔥 <strong>Coming soon! Manage and clean up multiple</strong>        &#9;|
+| <strong>WordPress sites with WPVitals</strong> 🔥                    &#9;|
+|                                                       |
+| <a href="https://wpvitals.app/">WPVitals</a> brings the sites where you use Advanced      |
+| Database Cleaner into one dashboard. Choose a site    |
+| and clean up its database without opening a           |
+| separate WordPress admin for each one.                |
+|                                                       |
+| 🚀 We’re aiming to launch in mid-December 2026.     &#9;|
+| <strong><a href="https://wpvitals.app/">Sign up for a launch-day email</a></strong> to hear when           |
+| WPVitals goes live.                                   |
++-------------------------------------------------------+</pre>
+
+= 4.3.1 – 23/11/2026 =
+- Fix: Prevented fatal errors when another plugin uses a different version of an MCP dependency.
+- Fix: Gave the ADBC MCP server its own OAuth discovery URLs so AI clients reach the correct consent page when another MCP server is active.
+
+= 4.3.0 – 22/11/2026 =
+- New: Added abilities support, allowing compatible tools and integrations to discover and use the plugin's capabilities.
+- New: Added MCP support, enabling compatible AI assistants to interact with the plugin's features.
+- New: Added CLI support, allowing plugin operations to be run from the terminal for scripting and automation.
+- New: Added a button to the "Options" tab to automatically fix autoload size, making it easier without requiring technical knowledge.
+- New: Added a "Database Operations Log" tab to record all plugin actions that modify the database.
+- New: Added a button to clear add-on activity logs.
+- Fix: [Premium + Pro-Lifetime] Resolved a database error after deleting post meta on multisite networks with mixed table collations.
+- Fix: [Premium + Pro-Lifetime] Fixed a false failure notice in Database Analytics when the day's data had already been saved.
+- Tweak: Increased the maximum database batch size to 10,000,000 rows, allowing more rows to be processed per batch.
+- Tweak: Standardized route names using the consistent /module/route structure, making routes clearer and more predictable for integrations.
 
 = 4.2.0 – 13/07/2026 =
 - New: 3 WooCommerce cleanup tools: Orphaned product variations, orphaned customer analytics, and expired customer sessions

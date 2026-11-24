@@ -137,9 +137,9 @@ class ADBC_Cron_Jobs {
 				// Only process the current batch if it's within the desired page range
 				if ( $currentRecord >= $startRecord && $currentRecord < $endRecord ) {
 
-					$cron_jobs_list[] = [ 
+					$cron_jobs_list[] = [
 						// This id is used to identify the cron job in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'cron_jobs',
 							'site_id' => (int) $cron_job->site_id,
 							'timestamp' => (int) $cron_job->timestamp,
@@ -178,7 +178,7 @@ class ADBC_Cron_Jobs {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_cron_jobs / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $cron_jobs_list,
 			'total_items' => $total_cron_jobs,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -227,7 +227,7 @@ class ADBC_Cron_Jobs {
 						}
 
 						// Create a cron job object
-						$cron_job = (object) [ 
+						$cron_job = (object) [
 							'name' => $hook,
 							'hook_name' => $hook,
 							'args' => $event['args'],
@@ -459,7 +459,7 @@ class ADBC_Cron_Jobs {
 			return $cron_jobs;
 		}
 
-		usort( $cron_jobs, function ($a, $b) use ($sort_col, $sort_dir) {
+		usort( $cron_jobs, function ( $a, $b ) use ( $sort_col, $sort_dir ) {
 
 			$val_a = $a->$sort_col;
 			$val_b = $b->$sort_col;
@@ -582,7 +582,7 @@ class ADBC_Cron_Jobs {
 			foreach ( $tasks as $hook => $events ) {
 				foreach ( $events as $event_key => $event ) {
 					// Create a cron job object
-					$cron_job = (object) [ 
+					$cron_job = (object) [
 						'name' => $hook,
 						'args' => $event['args'],
 						'timestamp' => $timestamp,
@@ -607,27 +607,29 @@ class ADBC_Cron_Jobs {
 	 * @return array An array of cron job names that were not processed (not deleted).
 	 */
 	public static function delete_cron_jobs( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'delete_cron_jobs', [ 'items_type' => 'cron_jobs', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$not_processed = [];
+			$not_processed = [];
 
-		foreach ( $grouped_selected as $site_id => $group ) {
+			foreach ( $grouped_selected as $site_id => $group ) {
 
-			ADBC_Sites::instance()->switch_to_blog_id( $site_id );
+				ADBC_Sites::instance()->switch_to_blog_id( $site_id );
 
-			foreach ( $group as $selected ) {
+				foreach ( $group as $selected ) {
 
-				// Try to unschedule the cron job
-				$success = wp_unschedule_event( $selected['timestamp'], $selected['name'], $selected['args'] );
+					// Try to unschedule the cron job
+					$success = wp_unschedule_event( $selected['timestamp'], $selected['name'], $selected['args'] );
 
-				if ( ! $success ) {
-					$not_processed[] = $selected['name'];
+					if ( ! $success ) {
+						$not_processed[] = $selected['name'];
+					}
 				}
+
+				ADBC_Sites::instance()->restore_blog();
 			}
 
-			ADBC_Sites::instance()->restore_blog();
-		}
-
-		return $not_processed;
+			return $not_processed;
+		}, [ 'method' => 'wordpress', 'failures' => true ] );
 	}
 
 	/**

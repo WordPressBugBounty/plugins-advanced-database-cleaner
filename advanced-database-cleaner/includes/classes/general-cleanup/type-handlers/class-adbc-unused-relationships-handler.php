@@ -39,7 +39,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 		return true;
 	}
 	protected function sortable_columns() {
-		return [ 
+		return [
 			'object_id',
 			'term_taxonomy_id',
 			'term_order',
@@ -48,7 +48,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 		];
 	}
 	protected function delete_helper() {
-		return static function ($object_id, $term_taxonomy_id) {
+		return static function ( $object_id, $term_taxonomy_id ) {
 
 			global $wpdb;
 
@@ -56,27 +56,26 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 			$term_taxonomy_id = (int) $term_taxonomy_id;
 
 			// Make sure the core function is available.
-			if ( ! function_exists( 'wp_delete_object_term_relationships' ) ) {
+			if ( ! function_exists( 'wp_remove_object_terms' ) ) {
 				return false;
 			}
 
-			// Resolve term_taxonomy_id -> taxonomy.
-			$taxonomy = $wpdb->get_var(
+			// Resolve exactly the selected relationship, retaining other terms.
+			$term = $wpdb->get_row(
 				$wpdb->prepare(
-					"SELECT taxonomy FROM {$wpdb->term_taxonomy} WHERE term_taxonomy_id = %d",
+					"SELECT term_id, taxonomy FROM {$wpdb->term_taxonomy} WHERE term_taxonomy_id = %d",
 					$term_taxonomy_id
-				)
+				),
+				ARRAY_A
 			);
 
 			// If we cannot resolve taxonomy or it does not exist, bail.
-			if ( ! $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+			if ( ! $term || ! taxonomy_exists( $term['taxonomy'] ) ) {
 				return false;
 			}
 
-			// Use native WP API. This will:
-			// - delete all relationships for this object in the given taxonomy
-			// - keep term counts in sync.
-			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
+			// This native API returns success and keeps hooks, caches and counts in sync.
+			$result = wp_remove_object_terms( $object_id, [ (int) $term['term_id'] ], $term['taxonomy'] );
 
 			// Be defensive about possible return types.
 			if ( is_wp_error( $result ) ) {
@@ -98,7 +97,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 	protected function add_composite_id( &$rows ) {
 
 		foreach ( $rows as &$row ) {
-			$row['composite_id'] = [ 
+			$row['composite_id'] = [
 				'items_type' => $this->items_type(),
 				'site_id' => (int) $row['site_id'],
 				'id' => (int) $row['object_id'],
@@ -120,7 +119,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 
 		$by_site = [];
 		foreach ( $items as $row ) {
-			$by_site[ $row['site_id'] ][] = [ 
+			$by_site[ $row['site_id'] ][] = [
 				'object_id' => (int) $row['id'],
 				'taxonomy_id' => (int) $row['term_taxonomy_id'],
 			];
@@ -142,7 +141,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 				";
 				$query = $wpdb->prepare( $sql, $pair['object_id'], $pair['taxonomy_id'] );
 
-				$deleted += $wpdb->query( $query );
+				$deleted += ADBC_Change_Log::query( $query );
 
 			}
 
@@ -164,7 +163,7 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 		$by_site = [];
 		foreach ( $items as $row ) {
 			$site_id = (int) $row['site_id'];
-			$by_site[ $site_id ][] = [ 
+			$by_site[ $site_id ][] = [
 				'object_id' => (int) $row['id'],
 				'term_taxonomy_id' => (int) $row['term_taxonomy_id'],
 			];
@@ -254,6 +253,29 @@ class ADBC_Cleanup_Unused_Relationships_Handler extends ADBC_Abstract_Cleanup_Ha
 
 		return $deleted;
 
+	}
+
+	/** object_id alone is not unique; retain other taxonomy relationships. */
+	protected function purge_sql() {
+		global $wpdb;
+		$deleted = 0;
+		foreach ( ADBC_Sites::instance()->get_sites_list() as $site ) {
+			ADBC_Sites::instance()->switch_to_blog_id( $site['id'] );
+			try {
+				if ( ! ADBC_Tables::is_table_exists( $this->table() ) ) {
+					continue;
+				}
+				// Filter the deleted rows themselves, rather than deleting every
+				// relationship belonging to an object with one unused relationship.
+				$affected = ADBC_Change_Log::query( "DELETE main FROM {$this->table()} AS main WHERE {$this->base_where()}" );
+				if ( false !== $affected ) {
+					$deleted += $affected;
+				}
+			} finally {
+				ADBC_Sites::instance()->restore_blog();
+			}
+		}
+		return $deleted;
 	}
 
 }

@@ -25,7 +25,7 @@ class ADBC_Automation extends ADBC_Singleton {
 
 		// sort by created_at descending
 		if ( is_array( $tasks ) ) {
-			uasort( $tasks, function ($a, $b) {
+			uasort( $tasks, function ( $a, $b ) {
 				return ( $b['created_at'] ?? 0 ) <=> ( $a['created_at'] ?? 0 );
 			} );
 		}
@@ -263,11 +263,21 @@ class ADBC_Automation extends ADBC_Singleton {
 		if ( $task['type'] === 'general_cleanup' ) {
 
 			foreach ( $task['operations'] as $items_type => $keep_last_config ) {
+				// A callback can outlive an administrator's edit or deletion. Read
+				// committed state instead of continuing with the initial snapshot.
+				$current = $this->read_run_state();
+				if ( ! isset( $current['tasks'][ $id ] ) || ! $this->same_run_configuration( $task, $current['tasks'][ $id ] ) ) {
+					break;
+				}
 
 				if ( in_array( $keep_last_config, [ 'no_keep_last', 'default' ] ) ) {
-					$affected = ADBC_General_Cleanup::run_cleanup( $items_type, $keep_last_config );
+					$affected = ADBC_Change_Log::context( [ 'source' => 'automation', 'user_id' => 0, 'connection_id' => '', 'automation_id' => $id ], static function () use ($items_type, $keep_last_config) {
+						return ADBC_General_Cleanup::run_cleanup( $items_type, $keep_last_config );
+					} );
 				} elseif ( is_array( $keep_last_config ) ) { // 'override' with given custom keep_last config value
-					$affected = ADBC_General_Cleanup::run_cleanup( $items_type, 'custom_keep_last', $keep_last_config );
+					$affected = ADBC_Change_Log::context( [ 'source' => 'automation', 'user_id' => 0, 'connection_id' => '', 'automation_id' => $id ], static function () use ($items_type, $keep_last_config) {
+						return ADBC_General_Cleanup::run_cleanup( $items_type, 'custom_keep_last', $keep_last_config );
+					} );
 				} else {
 					$affected = 0;
 				}
@@ -280,21 +290,65 @@ class ADBC_Automation extends ADBC_Singleton {
 			// custom_cleanup types can be added later
 		}
 
-		// If it was a one-off task, unschedule it now
-		if ( $task['frequency'] === 'adbc_once' ) {
-			$task['active'] = false; // Mark as inactive to prevent future runs
-			$this->unschedule( $id );
+		// Merge only execution metadata into the latest state. A conditional
+		// write prevents an edit between this read and write from being lost.
+		$last_run = time();
+		if ( ! $this->record_run( $id, $task, $last_run ) ) {
+			return;
 		}
-
-		// Update the last run time
-		$task['last_run'] = time();
-		$all[ $id ] = $task;
-		$this->save( $all );
 
 		// LOG the run timestamp and results
 		if ( ADBC_VERSION_TYPE === "PREMIUM" )
-			ADBC_Automation_Events_Log::log_event( $id, [ $task['last_run'] => $results ] );
+			ADBC_Automation_Events_Log::log_event( $id, [ $last_run => $results ] );
 
+	}
+
+	/** Fetch current task state without a possibly stale persistent object cache. */
+	private function read_run_state() {
+		global $wpdb;
+		$value = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", 'adbc_plugin_automation' ) );
+		$tasks = is_string( $value ) ? maybe_unserialize( $value ) : [];
+		return [ 'value' => $value, 'tasks' => is_array( $tasks ) ? $tasks : [] ];
+	}
+
+	private function same_run_configuration( $before, $after ) {
+		unset( $before['last_run'], $after['last_run'] );
+		return $before === $after;
+	}
+
+	/** Never restore a deleted task or overwrite other tasks with a run snapshot. */
+	private function record_run( $id, $started_task, $last_run ) {
+		global $wpdb;
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			$state = $this->read_run_state();
+			if ( ! isset( $state['tasks'][ $id ] ) ) {
+				return false;
+			}
+			$current = $state['tasks'][ $id ];
+			$complete_once = $current['frequency'] === 'adbc_once' && $this->same_run_configuration( $started_task, $current );
+			$current['last_run'] = $last_run;
+			if ( $complete_once ) {
+				$current['active'] = false;
+			}
+			$state['tasks'][ $id ] = $current;
+			$next = maybe_serialize( $state['tasks'] );
+			if ( $next === $state['value'] ) {
+				return true;
+			}
+			$written = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND BINARY option_value = BINARY %s", $next, 'adbc_plugin_automation', $state['value'] ) );
+			if ( false === $written ) {
+				return false;
+			}
+			if ( 1 === $written ) {
+				wp_cache_delete( 'adbc_plugin_automation', 'options' );
+				wp_cache_delete( 'alloptions', 'options' );
+				if ( $complete_once ) {
+					$this->unschedule( $id );
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

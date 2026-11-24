@@ -64,7 +64,7 @@ class ADBC_General_Cleanup {
 
 		}
 
-		return [ 
+		return [
 			'items' => $items,
 			'total_size' => $total_size,
 			'total_count' => $total_count,
@@ -86,7 +86,7 @@ class ADBC_General_Cleanup {
 		$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
 
 		if ( ! $handler ) {
-			return [ 
+			return [
 				"items" => [],
 				"total_items" => 0,
 				"total_size" => 0,
@@ -100,7 +100,7 @@ class ADBC_General_Cleanup {
 		$total_pages = max( 1, ceil( $total['count'] / $args['items_per_page'] ) );
 		$real_current_page = min( $args['current_page'], $total_pages );
 
-		return [ 
+		return [
 			"items" => $items,
 			"total_items" => $total['count'],
 			"total_size" => $total['size'],
@@ -118,15 +118,17 @@ class ADBC_General_Cleanup {
 	 * @return int The number of items deleted.
 	 */
 	public static function delete_items( $items_type, $items ) {
+		return ADBC_Change_Log::run( 'delete_items', [ 'items_type' => $items_type, 'selected' => $items ], function () use ($items_type, $items) {
 
-		$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
+			$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
 
-		if ( ! $handler ) {
-			return 0;
-		}
+			if ( ! $handler ) {
+				return 0;
+			}
 
-		return $handler->delete( $items );
+			return $handler->delete( $items );
 
+		}, [ 'count_result' => 'processed_items' ] );
 	}
 
 	/**
@@ -137,15 +139,17 @@ class ADBC_General_Cleanup {
 	 * @return int The number of items purged.
 	 */
 	public static function purge_items( $items_type ) {
+		return ADBC_Change_Log::run( 'purge_items', [ 'items_type' => $items_type ], function () use ($items_type) {
 
-		$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
+			$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
 
-		if ( ! $handler ) {
-			return 0;
-		}
+			if ( ! $handler ) {
+				return 0;
+			}
 
-		return $handler->purge();
+			return $handler->purge();
 
+		}, [ 'count_result' => 'processed_items' ] );
 	}
 
 	/**
@@ -159,28 +163,30 @@ class ADBC_General_Cleanup {
 	 * @return int The number of items purged.
 	 */
 	public static function run_cleanup( $items_type, $keep_last_config = 'default', $custom_keep_last_value = [] ) {
+		return ADBC_Change_Log::run( 'purge_items', [ 'items_type' => $items_type ], function () use ($items_type, $keep_last_config, $custom_keep_last_value) {
 
-		$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
+			$handler = ADBC_Cleanup_Type_Registry::handler( $items_type );
 
-		if ( ! $handler ) {
-			return 0;
-		}
+			if ( ! $handler ) {
+				return 0;
+			}
 
-		switch ( $keep_last_config ) {
-			case 'no_keep_last': // Do not keep any items.
-				$handler->set_keep_last_config( false );
-				break;
+			switch ( $keep_last_config ) {
+				case 'no_keep_last': // Do not keep any items.
+					$handler->set_keep_last_config( false );
+					break;
 
-			case 'custom_keep_last': // Override the keep_last setting with a custom value.
-				$handler->set_keep_last_config( $custom_keep_last_value );
-				break;
+				case 'custom_keep_last': // Override the keep_last setting with a custom value.
+					$handler->set_keep_last_config( $custom_keep_last_value );
+					break;
 
-			default: // 'default' Use the default keep_last setting.
-				$handler->set_keep_last_config( null );
-		}
+				default: // 'default' Use the default keep_last setting.
+					$handler->set_keep_last_config( null );
+			}
 
-		return $handler->purge();
+			return $handler->purge();
 
+		}, [ 'count_result' => 'processed_items' ] );
 	}
 
 	/**

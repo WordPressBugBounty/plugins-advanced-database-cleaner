@@ -11,12 +11,18 @@ if ( ! defined( 'ABSPATH' ) )
  */
 class ADBC_Hardcoded_Items extends ADBC_Singleton {
 
+	private static function is_mcp_item( $name, $items_type ) {
+		// Own all generated v4 connection/token/preview/index/job/session options,
+		// CIMD transient values/timeouts, and MCP hooks, including future versions.
+		return in_array( $items_type, [ 'options', 'transients', 'cron_jobs' ], true ) && preg_match( '/^(?:_site_transient_(?:timeout_)?|_transient_(?:timeout_)?)?adbc_mcp_/', $name );
+	}
+
 	/**
 	 * WordPress options.
 	 * 
 	 * @var array
 	 */
-	private $wp_options = [ 
+	private $wp_options = [
 		'siteurl' => '',
 		'home' => '',
 		'blogname' => '',
@@ -275,7 +281,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_tables = [ 
+	private $wp_tables = [
 		'terms' => '',
 		'term_taxonomy' => '',
 		'term_relationships' => '',
@@ -305,7 +311,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_cron_jobs = [ 
+	private $wp_cron_jobs = [
 		'delete_expired_transients' => '',
 		'do_pings' => '',
 		'publish_future_post' => '',
@@ -335,7 +341,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_transients = [ 
+	private $wp_transients = [
 		'_site_transient_available_translations' => '',
 		'_site_transient_theme_roots' => '',
 		'_site_transient_update_core' => '',
@@ -364,95 +370,95 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 		'_transient_update_plugins' => '',
 		'_transient_update_themes' => '',
 		'_transient_wp_styles_for_blocks' => '',
-		'_site_transient_popular_importers_' => [ 
+		'_site_transient_popular_importers_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_g_url_details_response_' => [ 
+		'_site_transient_g_url_details_response_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_wp_font_collection_url_' => [ 
+		'_site_transient_wp_font_collection_url_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'string' // url
 		],
-		'_site_transient_community-events-' => [ 
+		'_site_transient_community-events-' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_wp_remote_block_patterns_' => [ 
+		'_site_transient_wp_remote_block_patterns_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_browser_' => [ 
+		'_site_transient_browser_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_php_check_' => [ 
+		'_site_transient_php_check_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_poptags_' => [ 
+		'_site_transient_poptags_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_wordpress_credits_' => [ 
+		'_site_transient_wordpress_credits_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'string'
 		],
-		'_site_transient_wp_theme_files_patterns-' => [ 
+		'_site_transient_wp_theme_files_patterns-' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_wp_generating_att_' => [ 
+		'_transient_wp_generating_att_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'int'
 		],
-		'_transient_oembed_' => [ 
+		'_transient_oembed_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_dash_v2_' => [ 
+		'_transient_dash_v2_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_rss_' => [ 
+		'_transient_rss_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_feed_' => [ 
+		'_transient_feed_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_feed_mod_' => [ 
+		'_transient_feed_mod_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_feed_' => [ 
+		'_site_transient_feed_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_feed_mod_' => [ 
+		'_site_transient_feed_mod_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_transient_scrape_key_' => [ 
+		'_transient_scrape_key_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'md5'
 		],
-		'_site_transient_wp_plugin_dependencies_plugin_timeout_' => [ 
+		'_site_transient_wp_plugin_dependencies_plugin_timeout_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'string'
 		],
-		'_transient_global_styles_' => [ 
+		'_transient_global_styles_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'string'
 		],
-		'_transient_global_styles_svg_filters_' => [ 
+		'_transient_global_styles_svg_filters_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'string'
 		],
-		'_transient_plugins_delete_result_' => [ 
+		'_transient_plugins_delete_result_' => [
 			'rule' => 'starts_with',
 			'concatenated_with' => 'int'
 		],
@@ -464,7 +470,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_posts_meta = [ 
+	private $wp_posts_meta = [
 		'_cover_hash' => '',
 		'_customize_changeset_uuid' => '',
 		'_customize_draft_post_name' => '',
@@ -525,7 +531,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_users_meta = [ 
+	private $wp_users_meta = [
 		'_new_email' => '',
 		'admin_color' => '',
 		'aim' => '',
@@ -574,7 +580,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $wp_post_types = [ 
+	private $wp_post_types = [
 		'post' => '',
 		'page' => '',
 		'attachment' => '',
@@ -600,7 +606,9 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $adbc_options = [ 
+	private $adbc_options = [
+		'adbc_mcp_config' => '',
+		'adbc_mcp_state' => '',
 		'adbc_plugin_settings' => '',
 		'adbc_plugin_scan_info_options' => '',
 		'adbc_plugin_scan_info_tables' => '',
@@ -628,7 +636,9 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $adbc_cron_jobs = [ 
+	private $adbc_cron_jobs = [
+		'adbc_mcp_housekeeping' => '',
+		'adbc_mcp_run_job' => '',
 		'adbc_cron_analytics' => '',
 		'adbc_cron_automation' => '',
 		'edd_sl_sdk_weekly_license_check_advanced-database-cleaner-premium' => '',
@@ -641,7 +651,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * 
 	 * @var array
 	 */
-	private $adbc_transients = [ 
+	private $adbc_transients = [
 		'_transient_adbc_plugin_tables_to_repair' => 'adbc_plugin_tables_to_repair',
 		'_transient_adbc_plugin_innodb_conversion_lock' => 'adbc_plugin_innodb_conversion_lock',
 		'_transient_adbc_plugin_post_types_dict_updated' => 'adbc_plugin_post_types_dict_updated',
@@ -651,9 +661,9 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 	 * Most popular posts_meta and users_meta used to decide if a relation is unknown.
 	 * @var array
 	 */
-	private $known_meta_dict = [ 
+	private $known_meta_dict = [
 		// TO-CHECK: inserted all postmeta that have more than 30 relations
-		"posts_meta" => [ 
+		"posts_meta" => [
 			"_price" => "1023",
 			"_regular_price" => "882",
 			"_sale_price" => "682",
@@ -935,7 +945,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 			"source" => "30",
 		],
 		// TO-CHECK: inserted all usermeta that have more than 20 relations
-		"users_meta" => [ 
+		"users_meta" => [
 			"billing_phone" => "477",
 			"billing_country" => "300",
 			"billing_first_name" => "290",
@@ -1125,6 +1135,14 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 
 	}
 
+	/** Exact plugin names plus our generated MCP options/transients/hooks. */
+	public function is_item_belongs_to_adbc( $name, $items_type, $adbc_items = null ) {
+		if ( $adbc_items === null ) {
+			$adbc_items = $this->get_adbc_items( $items_type );
+		}
+		return isset( $adbc_items[ $name ] ) || self::is_mcp_item( $name, $items_type );
+	}
+
 	/**
 	 * Load hardcoded scan results to tables rows.
 	 * This function will override the belongs_to property of the tables rows with the hardcoded scan results.
@@ -1145,7 +1163,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 
 			if ( isset( $wp_hardcoded_items[ $table_name_without_prefix ] ) ) {
 
-				$tables_rows[ $table_name ]->belongs_to = [ 
+				$tables_rows[ $table_name ]->belongs_to = [
 					'type' => 'w',
 					'slug' => 'w',
 					'name' => __( 'WordPress core', 'advanced-database-cleaner' ),
@@ -1159,7 +1177,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 
 			} else if ( isset( $adbc_hardcoded_items[ $table_name_without_prefix ] ) ) {
 
-				$tables_rows[ $table_name ]->belongs_to = [ 
+				$tables_rows[ $table_name ]->belongs_to = [
 					'type' => 'p',
 					'slug' => ADBC_PLUGIN_DIR_NAME,
 					'name' => ADBC_Plugins::instance()->get_plugin_name_from_slug( ADBC_PLUGIN_DIR_NAME ),
@@ -1192,7 +1210,7 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 
 			if ( $this->is_item_belongs_to_wp_core( $item->name, $items_type, $wp_hardcoded_items ) ) {
 
-				$items_rows[ $index ]->belongs_to = [ 
+				$items_rows[ $index ]->belongs_to = [
 					'type' => 'w',
 					'slug' => 'w',
 					'name' => __( 'WordPress core', 'advanced-database-cleaner' ),
@@ -1204,9 +1222,9 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 				$items_rows[ $index ]->known_plugins = [];
 				$items_rows[ $index ]->known_themes = [];
 
-			} else if ( isset( $adbc_hardcoded_items[ $item->name ] ) ) {
+			} else if ( $this->is_item_belongs_to_adbc( $item->name, $items_type, $adbc_hardcoded_items ) ) {
 
-				$items_rows[ $index ]->belongs_to = [ 
+				$items_rows[ $index ]->belongs_to = [
 					'type' => 'p',
 					'slug' => ADBC_PLUGIN_DIR_NAME,
 					'name' => ADBC_Plugins::instance()->get_plugin_name_from_slug( ADBC_PLUGIN_DIR_NAME ),
@@ -1261,8 +1279,8 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 			if ( $exclude_wp && $this->is_item_belongs_to_wp_core( $name, $items_type, $wp_hardcoded_items ) )
 				$is_wp_core = true;
 
-			// Check ADBC hardcoded items (exact matches only).
-			if ( $exclude_adbc && isset( $adbc_hardcoded_items[ $name ] ) )
+			// Check exact ADBC names and our generated MCP namespace.
+			if ( $exclude_adbc && $this->is_item_belongs_to_adbc( $name, $items_type, $adbc_hardcoded_items ) )
 				$is_adbc = true;
 
 			// If item is not hardcoded (WP core nor ADBC), keep it.
@@ -1320,8 +1338,8 @@ class ADBC_Hardcoded_Items extends ADBC_Singleton {
 				continue;
 			}
 
-			// Remove ADBC hardcoded items (exact matches for now).
-			if ( isset( $adbc_items[ $item_name ] ) ) {
+			// Remove exact ADBC names and our generated MCP namespace.
+			if ( $this->is_item_belongs_to_adbc( $item_name, $items_type, $adbc_items ) ) {
 				unset( $items_list[ $item_name ] );
 				continue;
 			}

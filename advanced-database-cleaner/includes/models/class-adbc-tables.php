@@ -87,9 +87,9 @@ class ADBC_Tables {
 						? round( ( $table_data->size / $total_database_size ) * 100, 2 )
 						: 0;
 
-					$tables_list[] = [ 
+					$tables_list[] = [
 						// This id is used to identify the table in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'tables',
 							'name' => $table_name,
 						],
@@ -125,7 +125,7 @@ class ADBC_Tables {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_tables / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $tables_list,
 			'total_items' => $total_tables,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -150,7 +150,7 @@ class ADBC_Tables {
 		/* ──────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
 		 * ─────────────────────────────────────────────────────────────*/
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'table_name' => '`table_name`',
 			'size' => '`size`',
 			'rows' => '`rows`',
@@ -166,7 +166,7 @@ class ADBC_Tables {
 			$prefix_list = ADBC_Sites::instance()->get_all_prefixes(); // [ prefix => site_id ]
 
 			// Ensure longest-prefix-first matching to handle nested/similar prefixes accurately
-			uksort( $prefix_list, function ($a, $b) {
+			uksort( $prefix_list, function ( $a, $b ) {
 				$lenA = strlen( (string) $a );
 				$lenB = strlen( (string) $b );
 				if ( $lenA === $lenB )
@@ -317,7 +317,7 @@ class ADBC_Tables {
 		// Prepare the table name without prefix
 		$table_name_without_prefix = $found_prefix ? substr( $table_name, strlen( $found_prefix ) ) : $table_name;
 
-		return [ 
+		return [
 			'prefix' => $found_prefix,
 			'site_id' => $table_site_id,
 			'table_name_without_prefix' => $table_name_without_prefix
@@ -486,29 +486,23 @@ class ADBC_Tables {
 	 * @return array The list of tables that were not optimized.
 	 */
 	public static function optimize_tables( $tables_names ) {
-
-		global $wpdb;
-		$not_optimized = [];
-
-		// Loop through the list of tables and optimize them
-		foreach ( $tables_names as $table_name ) {
-
-			$result = $wpdb->get_results( "OPTIMIZE TABLE `{$table_name}`" );
-
-			// Check if the table is optimized successfully.
-			foreach ( $result as $row ) {
-				if ( $row->Msg_type == 'status' ) {
-					if ( strtolower( $row->Msg_text ) == 'table is already up to date' || strtolower( $row->Msg_text ) == 'ok' ) {
-						$wpdb->query( "ANALYZE TABLE `{$table_name}`" ); // Analyze the table to update the table data
-					} else {
-						$not_optimized[] = $table_name; // If the query failed, add the table name to the not optimized list
+		return ADBC_Change_Log::run( 'optimize_tables', [ 'tables' => $tables_names ], function () use ($tables_names) {
+			global $wpdb;
+			$failed = [];
+			foreach ( $tables_names as $table_name ) {
+				$rows = ADBC_Change_Log::query( $wpdb->prepare( 'OPTIMIZE TABLE %i', $table_name ), true );
+				$ok = false;
+				foreach ( $rows ?: [] as $row ) {
+					if ( 'status' === strtolower( $row->Msg_type ) && in_array( strtolower( $row->Msg_text ), [ 'ok', 'table is already up to date' ], true ) ) {
+						$ok = true;
 					}
 				}
+				if ( ! $ok || $wpdb->last_error || false === ADBC_Change_Log::query( $wpdb->prepare( 'ANALYZE TABLE %i', $table_name ) ) ) {
+					$failed[] = $table_name;
+				}
 			}
-
-		}
-
-		return $not_optimized;
+			return $failed;
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -518,23 +512,25 @@ class ADBC_Tables {
 	 * @return array The list of tables that were not deleted.
 	 */
 	public static function delete_tables( $tables_names ) {
+		return ADBC_Change_Log::run( 'delete_tables', [ 'tables' => $tables_names ], function () use ($tables_names) {
 
-		global $wpdb;
-		$not_deleted = [];
+			global $wpdb;
+			$not_deleted = [];
 
-		// Loop through the selected tables and delete them
-		foreach ( $tables_names as $table_name ) {
+			// Loop through the selected tables and delete them
+			foreach ( $tables_names as $table_name ) {
 
-			$deleted = $wpdb->query( "DROP TABLE IF EXISTS `{$table_name}`" );
+				$deleted = ADBC_Change_Log::query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 
-			if ( ! $deleted )
-				$not_deleted[] = $table_name; // If the query failed, add the table name to the not deleted list
-		}
+				if ( false === $deleted )
+					$not_deleted[] = $table_name; // If the query failed, add the table name to the not deleted list
+			}
 
-		// Delete the transient to force refresh the count of the tables to repair
-		delete_transient( 'adbc_plugin_tables_to_repair' );
+			// Delete the transient to force refresh the count of the tables to repair
+			delete_transient( 'adbc_plugin_tables_to_repair' );
 
-		return $not_deleted;
+			return $not_deleted;
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -544,23 +540,25 @@ class ADBC_Tables {
 	 * @return array The list of tables that were not emptied.
 	 */
 	public static function empty_tables( $tables_names ) {
+		return ADBC_Change_Log::run( 'empty_tables', [ 'tables' => $tables_names ], function () use ($tables_names) {
 
-		global $wpdb;
-		$not_processed = [];
+			global $wpdb;
+			$not_processed = [];
 
-		// Loop through the selected tables and optimize them
-		foreach ( $tables_names as $table_name ) {
+			// Loop through the selected tables and optimize them
+			foreach ( $tables_names as $table_name ) {
 
-			$emptied = $wpdb->query( "TRUNCATE TABLE `{$table_name}`" );
+				$emptied = ADBC_Change_Log::query( $wpdb->prepare( 'TRUNCATE TABLE %i', $table_name ) );
 
-			if ( $emptied ) {
-				$wpdb->query( "ANALYZE TABLE `{$table_name}`" ); // If the query succeeded, analyze the table to update the table data
-			} else {
-				$not_processed[] = $table_name; // If the query failed, add the table name to the not processed list
+				if ( false !== $emptied ) {
+					ADBC_Change_Log::query( $wpdb->prepare( 'ANALYZE TABLE %i', $table_name ) ); // If the query succeeded, analyze the table to update the table data
+				} else {
+					$not_processed[] = $table_name; // If the query failed, add the table name to the not processed list
+				}
 			}
-		}
 
-		return $not_processed;
+			return $not_processed;
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -570,30 +568,24 @@ class ADBC_Tables {
 	 * @return array The list of tables that were not repaired.
 	 */
 	public static function repair_tables( $tables_names ) {
-
-		global $wpdb;
-		$not_repaired = [];
-
-		// Loop through the selected tables and repair them
-		foreach ( $tables_names as $table_name ) {
-
-			$result = $wpdb->get_results( "REPAIR TABLE `{$table_name}`" );
-
-			// Check if the table is repaired successfully
-			foreach ( $result as $row ) {
-				if ( strtolower( $row->Msg_type ) == 'error' && stripos( $row->Msg_text, 'corrupt' ) !== false ) {
-					$not_repaired[] = $table_name; // If the query failed, add the table name to the not repaired list
-					break; // Break the loop if an error is found
-				} else {
-					$wpdb->query( "ANALYZE TABLE `{$table_name}`" ); // If the query succeeded, analyze the table to update the table data
+		return ADBC_Change_Log::run( 'repair_tables', [ 'tables' => $tables_names ], function () use ($tables_names) {
+			global $wpdb;
+			$failed = [];
+			foreach ( $tables_names as $table_name ) {
+				$rows = ADBC_Change_Log::query( $wpdb->prepare( 'REPAIR TABLE %i', $table_name ), true );
+				$ok = false;
+				foreach ( $rows ?: [] as $row ) {
+					if ( 'status' === strtolower( $row->Msg_type ) && 'ok' === strtolower( $row->Msg_text ) ) {
+						$ok = true;
+					}
+				}
+				if ( ! $ok || $wpdb->last_error || false === ADBC_Change_Log::query( $wpdb->prepare( 'ANALYZE TABLE %i', $table_name ) ) ) {
+					$failed[] = $table_name;
 				}
 			}
-		}
-
-		// Delete the transient to force refresh the count of the tables to repair
-		delete_transient( 'adbc_plugin_tables_to_repair' );
-
-		return $not_repaired;
+			delete_transient( 'adbc_plugin_tables_to_repair' );
+			return $failed;
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -603,19 +595,21 @@ class ADBC_Tables {
 	 * @return array The list of tables for which the counts could not be refreshed.
 	 */
 	public static function refresh_tables_counts( $tables_names ) {
+		return ADBC_Change_Log::run( 'refresh_tables_counts', [ 'tables' => $tables_names ], function () use ($tables_names) {
 
-		global $wpdb;
-		$not_processed = [];
+			global $wpdb;
+			$not_processed = [];
 
-		foreach ( $tables_names as $table_name ) {
+			foreach ( $tables_names as $table_name ) {
 
-			$analyzed = $wpdb->query( "ANALYZE TABLE `{$table_name}`" );
+				$analyzed = ADBC_Change_Log::query( $wpdb->prepare( 'ANALYZE TABLE %i', $table_name ) );
 
-			if ( ! $analyzed )
-				$not_processed[] = $table_name;
-		}
+				if ( ! $analyzed )
+					$not_processed[] = $table_name;
+			}
 
-		return $not_processed;
+			return $not_processed;
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**
@@ -679,7 +673,7 @@ class ADBC_Tables {
 		$formatted_results = [];
 
 		foreach ( $results as $row ) {
-			$formatted_results[ $row['table_name'] ] = [ 
+			$formatted_results[ $row['table_name'] ] = [
 				's' => (float) $row['size'],
 				'r' => (int) $row['total_rows'],
 				'c' => (int) $row['total_columns']
@@ -703,7 +697,7 @@ class ADBC_Tables {
 		$tables = $wpdb->get_col( "SHOW TABLES" );
 
 		foreach ( $tables as $table ) {
-			$wpdb->query( "ANALYZE TABLE `$table`" );
+			ADBC_Change_Log::query( "ANALYZE TABLE `$table`" );
 		}
 
 	}
@@ -909,8 +903,8 @@ class ADBC_Tables {
 
 		global $wpdb;
 
-		// $table_name is already validated via is_table_exists() in the endpoint layer.
-		$results = $wpdb->get_col( "SHOW COLUMNS FROM `{$table_name}`", 0 );
+		// Existing identifiers can contain backticks; existence is not SQL escaping.
+		$results = $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table_name ), 0 );
 
 		if ( ! is_array( $results ) ) {
 			return [];
@@ -934,26 +928,29 @@ class ADBC_Tables {
 		$current_page = $filters['current_page'];
 		$items_per_page = $filters['items_per_page'];
 		$sort_by = $filters['sort_by'];
-		$sort_order = $filters['sort_order'];
+		$sort_order = 'DESC' === $filters['sort_order'] ? 'DESC' : 'ASC';
 
 		// Validate sort_by against real columns of the table. If invalid, do not sort.
 		$columns = self::get_table_columns( $table_name );
 		$order_by_sql = '';
+		$query_args = [ $table_name ];
 
 		if ( in_array( $sort_by, $columns, true ) ) {
-			$order_by_sql = "ORDER BY `{$sort_by}` {$sort_order}";
+			$order_by_sql = "ORDER BY %i {$sort_order}";
+			$query_args[] = $sort_by;
 		}
 
 		// Total items for this table (no additional filters for now).
-		$total_items = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table_name}`" );
+		$total_items = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table_name ) );
 
 		$offset = ( $current_page - 1 ) * $items_per_page;
+		$query_args[] = $items_per_page;
+		$query_args[] = $offset;
 
 		// Fetch the requested page of rows.
 		$query = $wpdb->prepare(
-			"SELECT * FROM `{$table_name}` {$order_by_sql} LIMIT %d OFFSET %d",
-			$items_per_page,
-			$offset
+			"SELECT * FROM %i {$order_by_sql} LIMIT %d OFFSET %d",
+			...$query_args
 		);
 
 		$rows = $wpdb->get_results( $query, ARRAY_A );
@@ -963,7 +960,7 @@ class ADBC_Tables {
 			? max( 1, (int) ceil( $total_items / $items_per_page ) )
 			: 1;
 
-		return [ 
+		return [
 			'items' => is_array( $rows ) ? $rows : [],
 			'total_items' => $total_items,
 			'real_current_page' => min( $current_page, $total_real_pages ),
@@ -982,10 +979,10 @@ class ADBC_Tables {
 		global $wpdb;
 
 		// 1) Columns
-		$columns = $wpdb->get_results( "SHOW FULL COLUMNS FROM `{$table_name}`", ARRAY_A );
+		$columns = $wpdb->get_results( $wpdb->prepare( 'SHOW FULL COLUMNS FROM %i', $table_name ), ARRAY_A );
 
 		// 2) Indexes (PRIMARY, UNIQUE, INDEX, FULLTEXT, etc.)
-		$indexes = $wpdb->get_results( "SHOW INDEX FROM `{$table_name}`", ARRAY_A );
+		$indexes = $wpdb->get_results( $wpdb->prepare( 'SHOW INDEX FROM %i', $table_name ), ARRAY_A );
 
 		// 3) Table status (engine, collation, auto_increment, row_format, comment, etc.)
 		$status = $wpdb->get_row(
@@ -997,7 +994,7 @@ class ADBC_Tables {
 		);
 
 		// 4) CREATE TABLE statement (full DDL)
-		$create_row = $wpdb->get_row( "SHOW CREATE TABLE `{$table_name}`", ARRAY_A );
+		$create_row = $wpdb->get_row( $wpdb->prepare( 'SHOW CREATE TABLE %i', $table_name ), ARRAY_A );
 		$create_sql = '';
 		if ( is_array( $create_row ) ) {
 			// Key is usually 'Create Table', but fall back defensively.
@@ -1009,7 +1006,7 @@ class ADBC_Tables {
 			}
 		}
 
-		return [ 
+		return [
 			'columns' => is_array( $columns ) ? $columns : [],
 			'indexes' => is_array( $indexes ) ? $indexes : [],
 			'table_status' => is_array( $status ) ? $status : [],
@@ -1048,46 +1045,48 @@ class ADBC_Tables {
 	 * @return array { 'not_converted': string[], 'skipped_locked': int }
 	 */
 	public static function convert_tables_to_innodb( $tables_names ) {
+		return ADBC_Change_Log::run( 'convert_tables_to_innodb', [ 'tables' => $tables_names ], function () use ($tables_names) {
 
-		global $wpdb;
-		$not_converted = [];
-		$skipped_locked = 0;
+			global $wpdb;
+			$not_converted = [];
+			$skipped_locked = 0;
 
-		foreach ( $tables_names as $table_name ) {
+			foreach ( $tables_names as $table_name ) {
 
-			if ( self::is_table_innodb( $table_name ) ) {
+				if ( self::is_table_innodb( $table_name ) ) {
+					self::unlock_table_conversion( $table_name );
+					continue;
+				}
+
+				if ( self::is_table_conversion_locked( $table_name ) ) {
+					$skipped_locked++;
+					continue;
+				}
+
+				self::lock_table_conversion( $table_name );
+
+				if ( self::is_table_corrupted( $table_name ) ) {
+					$not_converted[] = $table_name;
+					continue;
+				}
+
+				$converted = ADBC_Change_Log::query( $wpdb->prepare( 'ALTER TABLE %i ENGINE=InnoDB', $table_name ) );
+
+				if ( $converted ) {
+					ADBC_Change_Log::query( $wpdb->prepare( 'ANALYZE TABLE %i', $table_name ) );
+				} else {
+					$not_converted[] = $table_name;
+				}
+
 				self::unlock_table_conversion( $table_name );
-				continue;
+
 			}
 
-			if ( self::is_table_conversion_locked( $table_name ) ) {
-				$skipped_locked++;
-				continue;
-			}
-
-			self::lock_table_conversion( $table_name );
-
-			if ( self::is_table_corrupted( $table_name ) ) {
-				$not_converted[] = $table_name;
-				continue;
-			}
-
-			$converted = $wpdb->query( "ALTER TABLE `{$table_name}` ENGINE=InnoDB" );
-
-			if ( $converted ) {
-				$wpdb->query( "ANALYZE TABLE `{$table_name}`" );
-			} else {
-				$not_converted[] = $table_name;
-			}
-
-			self::unlock_table_conversion( $table_name );
-
-		}
-
-		return [ 
-			'not_converted' => $not_converted,
-			'skipped_locked' => $skipped_locked,
-		];
+			return [
+				'not_converted' => $not_converted,
+				'skipped_locked' => $skipped_locked,
+			];
+		}, [ 'method' => 'sql', 'failures' => true ] );
 	}
 
 	/**

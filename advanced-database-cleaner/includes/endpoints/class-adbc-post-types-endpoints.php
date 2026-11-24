@@ -68,6 +68,27 @@ class ADBC_Post_Types_Endpoints {
 	 * @param WP_REST_Request $request_data The request with the post types to purge.
 	 * @return WP_REST_Response The response.
 	 */
+	/** Internal background path; no new public REST route. */
+	public static function delete_posts_by_post_type_batch( WP_REST_Request $request_data, int $limit = 20 ) {
+		if ( ADBC_VERSION_TYPE === 'PREMIUM' && ADBC_Scan_Utils::is_scan_exists( 'post_types' ) ) {
+			return new WP_Error( 'adbc_scan_running', 'A post type scan is in progress.' );
+		}
+		$selected = ADBC_Common_Validator::validate_endpoint_action_data( 'delete_post_types', 'post_types', $request_data );
+		if ( ! is_array( $selected ) ) {
+			return new WP_Error( 'adbc_invalid_post_type', $selected );
+		}
+		if ( ADBC_Settings::instance()->get_setting( 'prevent_taking_action_on_wp_items' ) === '1' ) {
+			$selected = ADBC_Hardcoded_Items::instance()->exclude_hardcoded_items_from_selected_items( $selected, 'post_types', 'wp' );
+			if ( ADBC_VERSION_TYPE === 'PREMIUM' ) {
+				$selected = ADBC_Scan_Utils::exclude_r_wp_items_from_selected_items( $selected, 'post_types' );
+			}
+		}
+		if ( ! $selected ) {
+			return new WP_Error( 'adbc_protected_post_type', 'The selected post type is protected.' );
+		}
+		return ADBC_Post_Types::delete_posts_batch( $selected[0], $limit );
+	}
+
 	public static function delete_posts_by_post_type( WP_REST_Request $request_data ) {
 
 		try {
@@ -94,9 +115,9 @@ class ADBC_Post_Types_Endpoints {
 						__( 'The selected post types could not be purged because they belong to WordPress core and are protected.', 'advanced-database-cleaner' ),
 						ADBC_Rest::BAD_REQUEST,
 						0,
-						[ 
-							"message_links" => [ 
-								[ 
+						[
+							"message_links" => [
+								[
 									"text" => __( 'Check setting', 'advanced-database-cleaner' ),
 									"tab_id" => "settings",
 									"anchor_id" => "other_settings",
@@ -114,9 +135,9 @@ class ADBC_Post_Types_Endpoints {
 				return ADBC_Rest::success(
 					__( 'Some post types were purged successfully; others were skipped because they belong to WordPress core and are protected.', 'advanced-database-cleaner' ),
 					count( $not_processed ),
-					[ 
-						"message_links" => [ 
-							[ 
+					[
+						"message_links" => [
+							[
 								"text" => __( 'Check setting', 'advanced-database-cleaner' ),
 								"tab_id" => "settings",
 								"anchor_id" => "other_settings",

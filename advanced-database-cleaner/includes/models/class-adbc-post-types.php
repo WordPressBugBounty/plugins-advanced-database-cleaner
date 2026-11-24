@@ -48,7 +48,7 @@ class ADBC_Post_Types {
 			if ( ! empty( $results ) ) {
 
 				foreach ( $results as $row ) {
-					$post_types_list[] = (object) [ 
+					$post_types_list[] = (object) [
 						'name' => (string) $row->post_type,
 						'posts_count' => (int) $row->posts_count,
 						'site_id' => $site['id'],
@@ -74,7 +74,7 @@ class ADBC_Post_Types {
 		 * 3. Apply filters (belongs_to, posts_count, search) and count categories
 		 * ─────────────────────────────────────────────────────────────*/
 		$min_posts_count = $filters['post_types_posts_count'];
-		$search_for = strtolower( $filters['search_for'] );
+		$search_for = strtolower( (string) $filters['search_for'] );
 		$post_types_public = $filters['post_types_visibility'];
 
 		$scan_counter = new ADBC_Scan_Counter();
@@ -111,7 +111,7 @@ class ADBC_Post_Types {
 		 * ─────────────────────────────────────────────────────────────*/
 		$sort_by = $filters['sort_by'];
 		$sort_order = $filters['sort_order'];
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'name',
 			'posts_count',
 			'site_id',
@@ -121,7 +121,7 @@ class ADBC_Post_Types {
 		if ( in_array( $sort_by, $allowed_columns, true ) ) {
 			usort(
 				$filtered_post_types_list,
-				function ($a, $b) use ($sort_by, $sort_order) {
+				function ( $a, $b ) use ( $sort_by, $sort_order ) {
 					if ( $sort_by === 'posts_count' ) {
 						$cmp = $a->posts_count <=> $b->posts_count;
 					} elseif ( $sort_by === 'site_id' ) {
@@ -146,8 +146,8 @@ class ADBC_Post_Types {
 
 		foreach ( $paginated_post_types_list as $post_type ) {
 
-			$post_types_list[] = [ 
-				'composite_id' => [ 
+			$post_types_list[] = [
+				'composite_id' => [
 					'items_type' => 'post_types',
 					'site_id' => (int) $post_type->site_id,
 					'name' => $post_type->name,
@@ -168,7 +168,7 @@ class ADBC_Post_Types {
 
 		$total_real_pages = max( 1, ceil( $total_post_types / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $post_types_list,
 			'total_items' => $total_post_types,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -349,36 +349,39 @@ class ADBC_Post_Types {
 		$current_page = $filters['current_page'];
 		$items_per_page = $filters['items_per_page'];
 		$sort_by = $filters['sort_by'];
-		$sort_order = $filters['sort_order'];
+		$sort_order = 'DESC' === $filters['sort_order'] ? 'DESC' : 'ASC';
 
 		$prefix = ADBC_Sites::instance()->get_prefix_from_site_id( $site_id );
 		$table_name = $prefix . 'posts';
 
 		// Validate sort_by against real columns of the table. If invalid, do not sort.
-		$allowed_columns = $wpdb->get_col( "SHOW COLUMNS FROM {$table_name}", 0 );
+		$allowed_columns = $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table_name ), 0 );
 		$order_by_sql = '';
+		$query_args = [ $table_name, $post_type ];
 
 		if ( in_array( $sort_by, $allowed_columns, true ) ) {
-			$order_by_sql = "ORDER BY `{$sort_by}` {$sort_order}";
+			$order_by_sql = "ORDER BY %i {$sort_order}";
+			$query_args[] = $sort_by;
 		}
 
 		// Total posts for this post type in this site.
 		$total_items = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table_name} WHERE post_type = %s",
+				'SELECT COUNT(*) FROM %i WHERE post_type = %s',
+				$table_name,
 				$post_type
 			)
 		);
 
 		$offset = ( $current_page - 1 ) * $items_per_page;
+		$query_args[] = $items_per_page;
+		$query_args[] = $offset;
 
 		// Fetch the requested page of rows.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table_name} WHERE post_type = %s {$order_by_sql} LIMIT %d OFFSET %d",
-				$post_type,
-				$items_per_page,
-				$offset
+				"SELECT * FROM %i WHERE post_type = %s {$order_by_sql} LIMIT %d OFFSET %d",
+				...$query_args
 			),
 			ARRAY_A
 		);
@@ -387,7 +390,7 @@ class ADBC_Post_Types {
 			? max( 1, (int) ceil( $total_items / $items_per_page ) )
 			: 1;
 
-		return [ 
+		return [
 			'items' => is_array( $rows ) ? $rows : [],
 			'total_items' => $total_items,
 			'real_current_page' => min( $current_page, $total_real_pages ),
@@ -407,15 +410,55 @@ class ADBC_Post_Types {
 	 * @param array $grouped_selected Post types grouped by site ID.
 	 * @return array Post type names that could not be fully purged.
 	 */
+	/** Delete at most a small number of posts, retaining the configured native/SQL behavior. */
+	public static function delete_posts_batch( array $selected, int $limit = 20 ): array {
+		return ADBC_Change_Log::run( 'delete_posts_batch', [ 'items_type' => 'post_types', 'selected' => [ $selected ] ], function () use ($selected, $limit) {
+			global $wpdb;
+			ADBC_Sites::instance()->switch_to_blog_id( $selected['site_id'] );
+			try {
+				$ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s ORDER BY ID LIMIT %d", $selected['name'], min( 20, max( 1, $limit ) ) ) );
+				if ( $wpdb->last_error ) {
+					throw new RuntimeException( 'Could not select the next post batch.' );
+				}
+				if ( ! $ids ) {
+					return [ 'processed' => 0, 'deleted' => 0 ];
+				}
+				$deleted = 0;
+				if ( 'native' === ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' ) ) {
+					foreach ( $ids as $id ) {
+						if ( ! wp_delete_post( (int) $id, true ) ) {
+							throw new RuntimeException( 'A post could not be deleted.' );
+						}
+						$deleted++;
+					}
+				} else {
+					$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+					$deleted = ADBC_Change_Log::query( $wpdb->prepare( "DELETE FROM {$wpdb->posts} WHERE ID IN ($placeholders) AND post_type = %s", array_merge( $ids, [ $selected['name'] ] ) ) );
+					if ( false === $deleted ) {
+						throw new RuntimeException( 'The post batch could not be deleted.' );
+					}
+				}
+				if ( $deleted < 1 ) {
+					throw new RuntimeException( 'Post cleanup made no progress.' );
+				}
+				return [ 'processed' => count( $ids ), 'deleted' => (int) $deleted ];
+			} finally {
+				ADBC_Sites::instance()->restore_blog();
+			}
+		}, [] );
+	}
+
 	public static function delete_posts( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'delete_posts', [ 'items_type' => 'post_types', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' )
-			return self::delete_posts_native( $grouped_selected );
+			if ( $cleanup_method === 'native' )
+				return self::delete_posts_native( $grouped_selected );
 
-		return self::delete_posts_sql( $grouped_selected );
+			return self::delete_posts_sql( $grouped_selected );
 
+		}, [ 'failures' => true ] );
 	}
 
 	/**
@@ -496,7 +539,7 @@ class ADBC_Post_Types {
 
 				$post_type = $selected['name'];
 
-				$wpdb->query(
+				ADBC_Change_Log::query(
 					$wpdb->prepare(
 						"DELETE FROM {$table_name} WHERE post_type = %s",
 						$post_type
@@ -540,7 +583,7 @@ class ADBC_Post_Types {
 		$sites->switch_to_blog_id( $site_id );
 
 		$public_post_types = get_post_types(
-			[ 
+			[
 				'public' => true,
 			],
 			'names'

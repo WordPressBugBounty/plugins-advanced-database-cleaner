@@ -23,7 +23,7 @@ class ADBC_Common_Model {
 		// Check the belongs_to filter
 		if ( ! empty( $filters['belongs_to'] ) && $filters['belongs_to'] !== 'all' ) {
 
-			$type_map = [ 
+			$type_map = [
 				'not_scanned' => 'u',
 				'plugins' => 'p',
 				'themes' => 't',
@@ -108,7 +108,7 @@ class ADBC_Common_Model {
 
 		// First of all, add some properties to each item to prevent any undefined index error.
 		foreach ( $items as $item ) {
-			$item->belongs_to = [ 
+			$item->belongs_to = [
 				'type' => 'u',
 				'slug' => 'u',
 				'name' => '',
@@ -135,7 +135,7 @@ class ADBC_Common_Model {
 		if ( empty( $items_list ) )
 			return 0; // Nothing to count.
 
-		// ADBC hardcoded items (exact matches only).
+		// Exact names and generated MCP records are already identified locally.
 		$adbc_items = ADBC_Hardcoded_Items::instance()->get_adbc_items( $items_type );
 		$wp_hardcoded_items = ADBC_Hardcoded_Items::instance()->get_wordpress_items( $items_type );
 
@@ -147,8 +147,8 @@ class ADBC_Common_Model {
 				continue;
 			}
 
-			// Check ADBC hardcoded items (exact matches).
-			if ( isset( $adbc_items[ $item ] ) ) {
+			// Check exact names and generated ADBC records.
+			if ( ADBC_Hardcoded_Items::instance()->is_item_belongs_to_adbc( $item, $items_type, $adbc_items ) ) {
 				unset( $items_list[ $index ] );
 				continue;
 			}

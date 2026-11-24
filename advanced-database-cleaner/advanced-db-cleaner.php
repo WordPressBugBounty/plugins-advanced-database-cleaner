@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Database Cleaner
  * Plugin URI:        https://sigmaplugin.com/downloads/wordpress-advanced-database-cleaner
  * Description:       The most advanced Database Cleaner for WordPress. Clean database by deleting orphaned items such as old "revisions", "old drafts", optimize database, and more.
- * Version:           4.2.0
+ * Version:           4.3.1
  * Author:            SigmaPlugin
  * Author URI:        https://sigmaplugin.com
  * Contributors:      symptote
@@ -43,11 +43,26 @@ if ( basename( dirname( __FILE__ ) ) === 'advanced-database-cleaner-pro' ) {
  * End of conflicts check
  ************************************************************************************/
 
-if ( ! defined( "ADBC_MAIN_PLUGIN_FILE_PATH" ) )
-	define( "ADBC_MAIN_PLUGIN_FILE_PATH", __FILE__ );
+// WordPress may include another edition for its activation check. The edition
+// already loaded owns this request; the new edition can load on the next one.
+if ( defined( 'ADBC_MAIN_PLUGIN_FILE_PATH' ) ) {
+	return;
+}
+
+define( 'ADBC_MAIN_PLUGIN_FILE_PATH', __FILE__ );
 
 if ( ! defined( 'ADBC_PLUGIN_VERSION' ) )
-	define( 'ADBC_PLUGIN_VERSION', '4.2.0' );
+	define( 'ADBC_PLUGIN_VERSION', '4.3.1' );
+
+// Action Scheduler registers its version on plugins_loaded, so load it before that hook fires.
+$adbc_mcp_bootstrap = __DIR__ . '/includes/mcp/src/class-adbc-mcp-bootstrap.php';
+if ( is_readable( $adbc_mcp_bootstrap ) ) {
+	require_once $adbc_mcp_bootstrap;
+}
+$adbc_mcp_action_scheduler = __DIR__ . '/includes/mcp/vendor/woocommerce/action-scheduler/action-scheduler.php';
+if ( class_exists( 'ADBC_MCP_Bootstrap', false ) && ADBC_MCP_Bootstrap::features()['abilities'] ) {
+	require_once $adbc_mcp_action_scheduler;
+}
 
 class ADBC_Advanced_DB_Cleaner {
 
@@ -70,14 +85,26 @@ class ADBC_Advanced_DB_Cleaner {
 	 * @return void
 	 */
 	public function bootstrap() {
+		// Enabled integrations also serve programmatic abilities and OAuth discovery.
+		$ai_enabled = false;
+		if ( class_exists( 'ADBC_MCP_Bootstrap', false ) ) {
+			$features = ADBC_MCP_Bootstrap::features();
+			$ai_enabled = $features['mcp'] || $features['abilities'];
+		}
+		$service_request = is_admin() || wp_doing_cron() || self::is_rest_request() || ( defined( 'WP_CLI' ) && WP_CLI );
+		if ( ! $service_request && ! $ai_enabled ) {
+			return;
+		}
+
+		include_once __DIR__ . '/constants.php';
+		if ( class_exists( 'ADBC_MCP_Bootstrap', false ) ) {
+			ADBC_MCP_Bootstrap::init();
+		}
 
 		// This plugin operates in admin, WP-Cron, and REST API contexts only.
 		// Skip bootstrap on frontend requests to avoid unnecessary DB queries and file includes.
-		if ( ! is_admin() && ! wp_doing_cron() && ! self::is_rest_request() )
+		if ( ! $service_request )
 			return;
-
-		// Load constants early so deactivation hook have access to them
-		include_once 'constants.php';
 
 		// Menus, scripts and custom styles
 		add_action( 'admin_menu', [ 'ADBC_Admin_Init', '_add_admin_menu' ] );
@@ -114,6 +141,7 @@ class ADBC_Advanced_DB_Cleaner {
 
 		// Show global notifications
 		add_action( 'all_admin_notices', [ 'ADBC_Admin_Init', 'maybe_show_global_notifications' ] );
+		add_action( 'admin_footer', [ 'ADBC_Admin_Init', 'maybe_show_bf2026_modal' ] ); // xxx: BF 2026. Delete when BF 2026 ends.
 
 		// Add crons hooks
 		add_action( 'adbc_cron_automation', [ 'ADBC_Automation', '_run_task_by_id' ], 10, 1 );
@@ -222,18 +250,25 @@ class ADBC_Advanced_DB_Cleaner {
 	 *
 	 * @return array The class map.
 	 */
-	private static $class_map = [ 
+	private static $class_map = [
 		'ADBC_Abstract_Cleanup_Handler' => 'includes/classes/general-cleanup/class-adbc-abstract-cleanup-handler.php',
 		'ADBC_Addons' => 'includes/classes/addons/class-adbc-addons.php',
 		'ADBC_Addons_Activity' => 'includes/premium/classes/addons/class-adbc-addons-activity.php',
 		'ADBC_Addons_Endpoints' => 'includes/premium/endpoints/class-adbc-addons-endpoints.php',
 		'ADBC_Admin_Init' => 'includes/classes/class-adbc-admin-init.php',
+		'ADBC_Autoload_Exception' => 'includes/classes/autoload/class-adbc-autoload-store.php',
+		'ADBC_Autoload_Store' => 'includes/classes/autoload/class-adbc-autoload-store.php',
+		'ADBC_Autoload_Lock' => 'includes/classes/autoload/class-adbc-autoload-lock.php',
+		'ADBC_Autoload_Service' => 'includes/classes/autoload/class-adbc-autoload-service.php',
+		'ADBC_Autoload_Endpoints' => 'includes/endpoints/class-adbc-autoload-endpoints.php',
 		'ADBC_Analytics' => 'includes/premium/classes/class-adbc-analytics.php',
 		'ADBC_Analytics_Endpoints' => 'includes/premium/endpoints/class-adbc-analytics-endpoints.php',
 		'ADBC_Automation' => 'includes/classes/class-adbc-automation.php',
 		'ADBC_Automation_Endpoints' => 'includes/endpoints/class-adbc-automation-endpoints.php',
 		'ADBC_Automation_Events_Log' => 'includes/premium/classes/class-adbc-automation-events-log.php',
 		'ADBC_Automation_Validator' => 'includes/utils/validator/class-adbc-automation-validator.php',
+		'ADBC_Black_Friday' => 'includes/classes/class-adbc-black-friday.php',
+		'ADBC_Plan_Offers' => 'includes/classes/class-adbc-plan-offers.php',
 		'ADBC_Cleanup_Type_Handler' => 'includes/classes/general-cleanup/class-adbc-cleanup-type-handler.php',
 		'ADBC_Cleanup_Type_Registry' => 'includes/classes/general-cleanup/class-adbc-cleanup-type-registry.php',
 		'ADBC_Cleanup_Woocommerce_Orphaned_Customer_Analytics_Handler' => 'includes/classes/general-cleanup/type-handlers/class-adbc-woocommerce-handler.php',
@@ -258,6 +293,7 @@ class ADBC_Advanced_DB_Cleaner {
 		'ADBC_License_Manager' => 'includes/premium/classes/class-adbc-license-manager.php',
 		'ADBC_Local_Scan' => 'includes/premium/classes/scan/process/class-adbc-local-scan.php',
 		'ADBC_Logging' => 'includes/utils/class-adbc-logging.php',
+		'ADBC_Change_Log' => 'includes/utils/class-adbc-change-log.php',
 		'ADBC_Logs_Endpoints' => 'includes/endpoints/class-adbc-logs-endpoints.php',
 		'ADBC_Migration' => 'includes/classes/class-adbc-migration.php',
 		'ADBC_Migration_Endpoints' => 'includes/premium/endpoints/class-adbc-migration-endpoints.php',

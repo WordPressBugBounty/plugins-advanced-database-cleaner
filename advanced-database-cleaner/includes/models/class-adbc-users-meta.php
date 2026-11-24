@@ -60,9 +60,9 @@ class ADBC_Users_Meta {
 				// Only process the current batch if it's within the desired page range
 				if ( $currentRecord >= $startRecord && $currentRecord < $endRecord ) {
 
-					$users_meta_list[] = [ 
+					$users_meta_list[] = [
 						// This id is used to identify the user meta in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'users_meta',
 							'site_id' => $user_meta->site_id,
 							'id' => (int) $user_meta->umeta_id,
@@ -96,7 +96,7 @@ class ADBC_Users_Meta {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_users_meta / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $users_meta_list,
 			'total_items' => $total_users_meta,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -127,7 +127,7 @@ class ADBC_Users_Meta {
 		/* ────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
 		 * ────────────────────────────────────────────────────────────*/
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'meta_key' => '`name`',
 			'size' => 'size',
 			'user_id' => '`user_id`',
@@ -378,15 +378,17 @@ class ADBC_Users_Meta {
 	 * @return array An array of users meta names that were not processed (not deleted).
 	 */
 	public static function delete_users_meta( $selected_items ) {
+		return ADBC_Change_Log::run( 'delete_users_meta', [ 'items_type' => 'users_meta', 'selected' => $selected_items ], function () use ($selected_items) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' ) {
-			return self::delete_users_meta_native( $selected_items );
-		}
+			if ( $cleanup_method === 'native' ) {
+				return self::delete_users_meta_native( $selected_items );
+			}
 
-		return self::delete_users_meta_sql( $selected_items );
+			return self::delete_users_meta_sql( $selected_items );
 
+		}, [ 'failures' => true ] );
 	}
 
 	/**
@@ -440,7 +442,7 @@ class ADBC_Users_Meta {
 		// Bulk delete.
 		$sql = "DELETE FROM {$wpdb->usermeta} WHERE umeta_id IN ($placeholders)";
 		$sql = $wpdb->prepare( $sql, ...$ids );
-		$wpdb->query( $sql );
+		ADBC_Change_Log::query( $sql );
 
 		// Identify any remaining rows (not processed) deterministically (names == meta_key).
 		$check_sql = "SELECT meta_key FROM {$wpdb->usermeta} WHERE umeta_id IN ($placeholders)";

@@ -114,8 +114,10 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 
 		// Enqueue the scripts and styles.
 		wp_enqueue_style( 'adbc-app-style', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/css/app.css', [], ADBC_PLUGIN_VERSION );
+		if ( ADBC_Black_Friday::get_offer() !== null )
+			ADBC_Plan_Offers::enqueue_style();
 		wp_enqueue_script( 'adbc-vendors-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/vendors.js', [], ADBC_PLUGIN_VERSION, true );
-		wp_enqueue_script( 'adbc-app-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/app.js', [ 'adbc-vendors-script', 'wp-i18n', 'wp-date' ], ADBC_PLUGIN_VERSION, true );
+		wp_enqueue_script( 'adbc-app-script', ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/app.js', [ 'adbc-vendors-script', 'wp-i18n', 'wp-date' ], ADBC_Common_Utils::get_asset_version( 'js/app.js' ), true );
 
 		// Load the translations for the app script.
 		wp_set_script_translations( 'adbc-app-script', 'advanced-database-cleaner', ADBC_PLUGIN_DIR_PATH . 'languages' );
@@ -129,17 +131,21 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 				'nonce' => wp_create_nonce( 'wp_rest' ),
 				'version' => ADBC_PLUGIN_VERSION,
 				'version_type' => ADBC_VERSION_TYPE,
+				'ai_agents_support' => class_exists( 'ADBC_MCP_Bootstrap', false ) ? ADBC_MCP_Bootstrap::support_status() : [ 'available' => false, 'dependencies_available' => false ],
+				'ai_integration_settings' => class_exists( 'ADBC_MCP_Admin', false ) && ADBC_MCP_Executor::can_execute() ? ADBC_MCP_Admin::integration_status() : null,
 				'is_pro_version' => ADBC_IS_PRO_VERSION ? '1' : '0',
 				'settings' => ADBC_Settings::instance()->get_settings( false ), // Send none sensitive settings.
 				'license_data' => ADBC_VERSION_TYPE === "PREMIUM" ? ADBC_License_Manager::get_license_data() : [], // Send masked license key.
 				'warnings' => ADBC_Notifications::instance()->get_warnings(),
 				'notifications' => ADBC_Notifications::instance()->get_local_notifications(),
 				'is_multisite' => is_multisite() ? '1' : '0',
+				'main_site_id' => is_multisite() ? (int) get_main_site_id() : (int) get_current_blog_id(),
 				'sites_list' => ADBC_Sites::instance()->get_sites_list(),
 				'actionscheduler_actions_exists' => ADBC_Tables::is_actionscheduler_table_exists( 'actions' ) ? '1' : '0',
 				'actionscheduler_logs_exists' => ADBC_Tables::is_actionscheduler_table_exists( 'logs' ) ? '1' : '0',
 				'php_max_execution_time' => ( $value = (int) ini_get( 'max_execution_time' ) ) > 0 ? $value : 120,
 				'is_woptimize_installed' => self::is_woptimize_installed() ? '1' : '0',
+				'bf2026_offer' => ADBC_Black_Friday::get_offer(), // Remove after the BF 2026 campaign.
 			)
 		);
 
@@ -160,14 +166,12 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 		// Check if we have any global notifications to show
 		$global_notifications = ADBC_Notifications::instance()->get_global_notifications();
 
-		if ( empty( $global_notifications ) )
-			return;
-
 		$has_rating = isset( $global_notifications['rating_notice'] );
 		$has_ltd = isset( $global_notifications['ltd_migration_notice'] );
+		$has_bf2026 = ADBC_Black_Friday::get_plugins_modal() !== null;
 
 		// Only enqueue shared assets if at least one of our custom global notices is active.
-		if ( ! $has_rating && ! $has_ltd )
+		if ( ! $has_rating && ! $has_ltd && ! $has_bf2026 )
 			return;
 
 		// Single combined CSS/JS for all global notices (rating + LTD migration).
@@ -181,18 +185,23 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 		wp_enqueue_script(
 			'adbc-global-script',
 			ADBC_PLUGIN_ABSOLUTE_URL . '/assets/js/global-js.js',
-			array( 'jquery' ),
-			ADBC_PLUGIN_VERSION,
+			array( 'jquery', 'wp-i18n' ),
+			ADBC_Common_Utils::get_asset_version( 'js/global-js.js' ),
 			true
 		);
 
 		// Single localized object shared by all notice JS.
+		if ( $has_bf2026 ) {
+			ADBC_Plan_Offers::enqueue_style();
+			wp_set_script_translations( 'adbc-global-script', 'advanced-database-cleaner', ADBC_PLUGIN_DIR_PATH . 'languages' );
+		}
 		wp_localize_script(
 			'adbc-global-script',
 			'adbc_global_settings',
 			array(
 				'rest_url' => esc_url_raw( rest_url( ADBC_REST_API_NAMESPACE ) ),
 				'nonce' => wp_create_nonce( 'wp_rest' ),
+				'bf2026_offer' => $has_bf2026 ? ADBC_Black_Friday::get_offer() : null,
 			)
 		);
 	}
@@ -235,7 +244,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	 * 
 	 * This is necessary because WordPress generates the MD5 hash based on the script file name,
 	 * and we want to ensure that our translations are loaded from the correct file.
-	 * The MD5 of the translation file built by WP will use assets/js/translations.js instead of assets/js/app.js
+	 * Both the plugin dashboard and the Plugins page use the catalog generated from assets/js/translations.js.
 	 * 
 	 * @param string $file The path to the translation file.
 	 * @param string $handle The script handle.
@@ -248,9 +257,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 			return $file;
 		}
 
-		$file = str_replace( md5( 'assets/js/app.js' ), md5( 'assets/js/translations.js' ), $file );
-
-		return $file;
+		return str_replace( [ md5( 'assets/js/app.js' ), md5( 'assets/js/global-js.js' ) ], md5( 'assets/js/translations.js' ), $file );
 
 	}
 
@@ -272,6 +279,10 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 
 		// unschedule analytics cron
 		wp_clear_scheduled_hook( 'adbc_cron_analytics' );
+		wp_unschedule_hook( 'adbc_mcp_recover_jobs' );
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( '', [], 'adbc-mcp' );
+		}
 
 		// Deactivate all automation tasks
 		ADBC_Automation::instance()->deactivate_all_tasks();
@@ -546,7 +557,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 					'</strong>'
 				);
 
-				$phrase2 = esc_html__( 'To access it, we created a separate plugin version under an annual pricing model, bundled with the Remote Scan feature and upcoming AI and cloud capabilities. As a lifetime customer, you can benefit from a 50% discount on the first purchase and all renewals (discount available for a limited time).', 'advanced-database-cleaner' );
+				$phrase2 = esc_html__( 'To access it, we created a separate plugin version, bundled with the Remote Scan feature and upcoming AI and cloud capabilities. As a lifetime customer, you can benefit from a 50% discount on the first purchase and all renewals (discount available for a limited time).', 'advanced-database-cleaner' );
 
 				echo '<div id="adbc-ltd-migration-notice" class="adbc-ltd-migration-notice">';
 				echo '<div class="adbc-ltd-icon">';
@@ -592,6 +603,140 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	}
 
 	/**
+	 * xxx: BF 2026. Modal on the Plugins page, shown once after updating to this version.
+	 * Printed in the footer and marked as shown as soon as it's rendered. Delete when BF 2026 ends.
+	 *
+	 * @return void
+	 */
+	public static function maybe_show_bf2026_modal() {
+
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) )
+			return;
+
+		$offer = ADBC_Black_Friday::get_plugins_modal();
+		if ( $offer === null )
+			return;
+
+		self::render_bf2026_plugins_modal( $offer );
+		ADBC_Settings::instance()->update_settings( [ 'bf2026_plugins_modal_pending' => '0' ] );
+	}
+
+	/**
+	 * Render the shared offer as a modal. It's printed hidden: global-js.js opens it and
+	 * handles the countdown, focus and closing, so the page is never blocked without JS.
+	 */
+	private static function render_bf2026_plugins_modal( $offer ) {
+		$phase = $offer['phase'];
+		$logo_url = ADBC_PLUGIN_ABSOLUTE_URL . '/assets/images/logo.png';
+
+		// The plugin page registered in this admin context (menu_page_url() ignores the network admin). Empty means no link.
+		$settings = ADBC_Settings::instance();
+		$plugin_page_url = '';
+		if ( is_network_admin() ) {
+			if ( $settings->get_setting( 'network_menu' ) === '1' )
+				$plugin_page_url = network_admin_url( 'admin.php?page=advanced_db_cleaner_network' );
+		} elseif ( $settings->get_setting( 'left_menu' ) === '1' ) {
+			$plugin_page_url = admin_url( 'admin.php?page=advanced_db_cleaner' );
+		} elseif ( $settings->get_setting( 'tools_menu' ) === '1' ) {
+			$plugin_page_url = admin_url( 'tools.php?page=advanced_db_cleaner' );
+		}
+
+		// Last day of the phase, e.g. "Nov 27" (the phase end is exclusive).
+		$end_date = wp_date( 'M j', intdiv( $phase['end'] - 1, 1000 ), new DateTimeZone( 'UTC' ) );
+
+		$units = [
+			'd' => __( 'Days', 'advanced-database-cleaner' ),
+			'h' => __( 'Hours', 'advanced-database-cleaner' ),
+			'm' => __( 'Min', 'advanced-database-cleaner' ),
+			's' => __( 'Sec', 'advanced-database-cleaner' ),
+		];
+
+		?>
+		<div id="adbc-bf-modal" class="adbc-bf-modal adbc-bf-phase-<?php echo esc_attr( $phase['id'] ); ?>"
+			data-ends-at="<?php echo esc_attr( $phase['end'] ); ?>" hidden>
+			<div class="adbc-bf-backdrop" data-adbc-bf-close></div>
+
+			<div class="adbc-bf-dialog" role="dialog" aria-modal="true" aria-labelledby="adbc-bf-title" tabindex="-1">
+				<button type="button" class="adbc-bf-close" data-adbc-bf-close
+					aria-label="<?php esc_attr_e( 'Hide this offer', 'advanced-database-cleaner' ); ?>"
+					title="<?php esc_attr_e( 'Hide this offer', 'advanced-database-cleaner' ); ?>">
+					<span class="dashicons dashicons-no-alt" aria-hidden="true"></span>
+				</button>
+
+				<div class="adbc-bf-mark" aria-hidden="true">
+					<img class="adbc-bf-mark-logo" src="<?php echo esc_url( $logo_url ); ?>" alt="" width="70" height="90">
+				</div>
+
+				<?php if ( $plugin_page_url !== '' ) : ?>
+					<a class="adbc-bf-brand" href="<?php echo esc_url( $plugin_page_url ); ?>">
+						<span class="adbc-bf-plugin">Advanced Database Cleaner</span>
+						<svg class="adbc-bf-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+							<path d="m9 18 6-6-6-6"></path>
+						</svg>
+					</a>
+				<?php else : ?>
+					<span class="adbc-bf-brand"><span class="adbc-bf-plugin">Advanced Database Cleaner</span></span>
+				<?php endif; ?>
+
+				<div class="adbc-bf-head">
+					<span class="adbc-bf-badge"><?php echo esc_html( $phase['badge'] ); ?></span>
+					<?php if ( $end_date ) : ?>
+						<span class="adbc-bf-ends">
+							<?php
+							/* translators: %s: date when the offer ends, e.g. "Nov 27". */
+							echo esc_html( sprintf( __( 'Ends %s', 'advanced-database-cleaner' ), $end_date ) );
+							?>
+						</span>
+					<?php endif; ?>
+				</div>
+
+				<h2 id="adbc-bf-title" class="adbc-bf-title"><?php echo esc_html( $offer['title'] ); ?></h2>
+				<p class="adbc-bf-text"><?php echo esc_html( $offer['description'] ); ?></p>
+
+				<ul class="adbc-bf-benefits">
+					<?php foreach ( $offer['benefits'] as $benefit ) : ?>
+						<li>
+							<svg class="adbc-bf-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+								stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+								focusable="false">
+								<path d="M20 6 9 17l-5-5"></path>
+							</svg>
+							<?php echo esc_html( $benefit ); ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+
+				<div class="adbc-bf-offer">
+					<div class="adbc-bf-offer-top">
+						<div class="adbc-bf-discount">
+							<span class="adbc-bf-discount-value"><?php echo esc_html( $offer['discount'] ); ?>%</span>
+							<span class="adbc-bf-discount-off"><?php esc_html_e( 'off', 'advanced-database-cleaner' ); ?></span>
+						</div>
+						<span class="adbc-bf-countdown-label"><?php echo esc_html( $phase['countdownLabel'] ); ?></span>
+					</div>
+					<div class="adbc-bf-countdown" role="timer">
+						<?php foreach ( $units as $unit => $label ) : ?>
+							<div class="adbc-bf-unit">
+								<span class="adbc-bf-unit-value" data-unit="<?php echo esc_attr( $unit ); ?>">00</span>
+								<span class="adbc-bf-unit-label"><?php echo esc_html( $label ); ?></span>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="adbc-bf-cta">
+						<?php echo esc_html( $offer['cta'] ); ?> &rarr;
+					</button>
+				</div>
+
+				<button type="button" class="adbc-bf-later"
+					data-adbc-bf-close><?php esc_html_e( 'No thanks', 'advanced-database-cleaner' ); ?></button>
+			</div>
+		</div>
+		<?php
+
+	}
+
+	/**
 	 * Static proxy for add_admin_menu to be used in the hooks.
 	 * 
 	 * @return void
@@ -622,7 +767,7 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 	/**
 	 * Load all cleanup type handlers.
 	 * 
-	 * This method includes all PHP files in the type-handlers directories,
+	 * This method includes one copy of each PHP handler file,
 	 * allowing each handler to self-register with the General Cleanup system.
 	 * It supports both free and premium handlers based on the plugin version.
 	 * 
@@ -640,16 +785,24 @@ class ADBC_Admin_Init extends ADBC_Singleton {
 			$dirs[] = $premium_dir;
 		}
 
+		$handlers = [];
+
 		foreach ( $dirs as $dir ) {
 
 			if ( ! is_dir( $dir ) ) {
 				continue;
 			}
 
-			foreach ( glob( $dir . '/*.php' ) as $file ) {
-				include_once $file; // triggers the self-registration logic
+			foreach ( glob( $dir . '/*.php' ) ?: [] as $file ) {
+				// Updates may leave a handler in both locations. Premium takes
+				// precedence in Premium builds; include_once only deduplicates paths.
+				$handlers[ basename( $file ) ] = $file;
 			}
 
+		}
+
+		foreach ( $handlers as $file ) {
+			include_once $file; // triggers the self-registration logic
 		}
 
 	}

@@ -15,10 +15,10 @@ class ADBC_Notifications extends ADBC_Singleton {
 	private const PHP_MIN_VERSION = '7.0';
 
 	// Initializes the notifications meta array with the default keys.
-	private static $notifications_meta = [ 
+	private static $notifications_meta = [
 
 		// The messages are empty because they will be initialized in the constructor, because we can't use the translation functions in this context.
-		"php_is_old" => [ 
+		"php_is_old" => [
 			"type" => "warning",
 			"message" => "",
 			"is_critical" => true,
@@ -26,7 +26,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"save" => false,
 			"global" => false,
 		],
-		"wp_is_old" => [ 
+		"wp_is_old" => [
 			"type" => "warning",
 			"message" => "",
 			"is_critical" => true,
@@ -34,7 +34,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"save" => false,
 			"global" => false,
 		],
-		"uploads_folder" => [ 
+		"uploads_folder" => [
 			"type" => "warning",
 			"message" => "",
 			"is_critical" => false,
@@ -42,7 +42,11 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"save" => true,
 			"global" => false,
 		],
-		"wp_file_system" => [ 
+		"database_change_log" => [
+			"type" => "warning", "message" => "", "is_critical" => false,
+			"dismissible" => false, "save" => true, "global" => false,
+		],
+		"wp_file_system" => [
 			"type" => "warning",
 			"message" => "",
 			"is_critical" => false,
@@ -50,7 +54,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"save" => true,
 			"global" => false,
 		],
-		"rating_notice" => [ 
+		"rating_notice" => [
 			"type" => "rating",
 			"message" => "",
 			"is_critical" => false,
@@ -59,7 +63,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => true,
 			"condition" => [ 'ADBC_Notifications', 'should_show_rating_notice' ]
 		],
-		"addons_activity_info" => [ 
+		"addons_activity_info" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -68,7 +72,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => false,
 			"condition" => [ 'ADBC_Notifications', 'always_return_true' ] // Always true, so it can be added automatically later.
 		],
-		"migration_available" => [ 
+		"migration_available" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -77,7 +81,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => false,
 			"condition" => [ 'ADBC_Notifications', 'old_data_import_available' ]
 		],
-		"imported_tasks_deactivated_notice" => [ 
+		"imported_tasks_deactivated_notice" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -85,7 +89,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"save" => true,
 			"global" => false,
 		],
-		"pro_remote_scan_upsell" => [ 
+		"pro_remote_scan_upsell" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -94,7 +98,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => false,
 			"condition" => [ 'ADBC_Notifications', 'should_show_pro_remote_scan_upsell' ]
 		],
-		"ltd_migration_notice" => [ 
+		"ltd_migration_notice" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -103,7 +107,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => true,
 			"condition" => [ 'ADBC_Notifications', 'should_show_ltd_migration_notice' ]
 		],
-		"woptimize_notice" => [ 
+		"woptimize_notice" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -112,7 +116,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 			"global" => false,
 			"condition" => [ 'ADBC_Notifications', 'should_show_woptimize_notice' ]
 		],
-		"woocommerce_not_detected" => [ 
+		"woocommerce_not_detected" => [
 			"type" => "info",
 			"message" => "",
 			"is_critical" => false,
@@ -157,7 +161,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Notifications array.
 	 */
 	public function get_all_non_dismissed() {
-		return array_filter( $this->notifications, function ($n) {
+		return array_filter( $this->notifications, function ( $n ) {
 			return ! $n['dismissed'];
 		} );
 	}
@@ -168,7 +172,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Warnings array.
 	 */
 	public function get_warnings() {
-		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+		return array_filter( $this->get_all_non_dismissed(), function ( $n ) {
 			return $n['type'] === 'warning';
 		} );
 	}
@@ -179,7 +183,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Local notifications array.
 	 */
 	public function get_local_notifications() {
-		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+		return array_filter( $this->get_all_non_dismissed(), function ( $n ) {
 			return ! $n['global'] && $n['type'] !== 'warning';
 		} );
 	}
@@ -190,7 +194,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return array Global notifications array.
 	 */
 	public function get_global_notifications() {
-		return array_filter( $this->get_all_non_dismissed(), function ($n) {
+		return array_filter( $this->get_all_non_dismissed(), function ( $n ) {
 			return $n['global'] && $n['type'] !== 'warning';
 		} );
 	}
@@ -279,7 +283,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 		// Save only the notifications that need to be saved in the database.
 		foreach ( $this->notifications as $key => $notification ) {
 			if ( $notification['save'] ) {
-				$notifications_to_save[ $key ] = [ 
+				$notifications_to_save[ $key ] = [
 					'dismissed' => $notification['dismissed']
 				];
 			}
@@ -353,6 +357,7 @@ class ADBC_Notifications extends ADBC_Singleton {
 	 * @return void
 	 */
 	private function initialize_messages() {
+		self::$notifications_meta['database_change_log']['message'] = __( 'Database maintenance continued, but its change log could not be written. Check permissions on the ADBC uploads folder.', 'advanced-database-cleaner' );
 
 		// Add message for notifications with type 'warning' since they are printed directly on the screen. For other types, we hardcode them in frontend.
 

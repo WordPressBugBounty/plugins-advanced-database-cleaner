@@ -38,156 +38,164 @@ class ADBC_Settings extends ADBC_Singleton {
 	 */
 	private function prepare_default_settings() {
 
-		$this->default_settings = [ 
-			'installed_on' => [ 
+		$this->default_settings = [
+			'installed_on' => [
 				'default' => date( "d/m/Y" ),
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_valid_date'
 			],
-			'left_menu' => [ 
+			'left_menu' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'tools_menu' => [ 
+			'tools_menu' => [
 				'default' => '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'network_menu' => [ 
+			'network_menu' => [
 				'default' => is_multisite() ? '1' : '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'hidden_tabs' => [ 
+			'hidden_tabs' => [
 				'default' => [],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'are_valid_hiddenable_tabs'
 			],
-			'send_corrections_to_server' => [ 
+			'send_corrections_to_server' => [
 				'default' => '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'analytics_enabled' => [ 
+			'analytics_enabled' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'analytics_execution' => [ 
+			'analytics_execution' => [
 				'default' => [ "success" => 0, "fail" => 0 ],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_execution_data_valid'
 			],
-			'addons_activity_enabled' => [ 
+			'addons_activity_enabled' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'addons_activity_execution' => [ 
+			'addons_activity_execution' => [
 				'default' => [ "success" => 0, "fail" => 0 ],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_execution_data_valid'
 			],
-			'show_tables_with_invalid_prefix' => [ 
+			'show_tables_with_invalid_prefix' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'sidebar_is_expanded' => [ 
+			'sidebar_is_expanded' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'file_lines_batch' => [ 
+			'file_lines_batch' => [
 				'default' => 10000,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_scan_setting_valid'
 			],
-			'database_rows_batch' => [ 
+			'database_rows_batch' => [
 				'default' => 100000,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_performance_settings_valid'
 			],
-			'file_content_chunks' => [ 
+			'file_content_chunks' => [
 				'default' => 1024 * 1, // (for 1024 KB)
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_scan_setting_valid'
 			],
-			'scan_max_execution_time' => [ 
+			'scan_max_execution_time' => [
 				'default' => 0,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_scan_setting_valid'
 			],
-			'reduce_cpu_usage' => [ 
+			'reduce_cpu_usage' => [
 				'default' => '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'cpu_work_time_ms' => [ 
+			'cpu_work_time_ms' => [
 				'default' => 1000,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_cpu_usage_time_valid'
 			],
-			'cpu_rest_time_ms' => [ 
+			'cpu_rest_time_ms' => [
 				'default' => 10,
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_cpu_usage_time_valid'
 			],
-			'api_scan_balance' => [ 
+			'api_scan_balance' => [
 				'default' => [],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_api_scan_balance_valid'
 			],
-			'security_code' => [ 
+			'security_code' => [
 				'default' => $this->generate_security_code(),
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_security_code_valid'
 			],
-			'notifications' => [ 
+			'notifications' => [
 				'default' => [],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'are_valid_notifications_keys'
 			],
-			'keep_last' => [ 
+			'keep_last' => [
 				'default' => self::default_keep_last(),
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_keep_last_valid'
 			],
-			'rating_notice_date' => [ 
+			'rating_notice_date' => [
 				'default' => date( "d/m/Y" ),
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_valid_date'
 			],
-			'ltd_migration_reminder_date' => [ 
+			'ltd_migration_reminder_date' => [
 				'default' => '01/01/2000', // Past date so notice shows until user dismisses or delays
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_valid_date'
 			],
-			'free_migration_done' => [ 
+			'free_migration_done' => [
 				'default' => '0',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'sql_or_native_cleanup_method' => [ 
+			'sql_or_native_cleanup_method' => [
 				'default' => 'sql',
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_performance_settings_valid'
 			],
-			'prevent_taking_action_on_wp_items' => [ 
+			'prevent_taking_action_on_wp_items' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'show_confirmation_on_dangerous_actions' => [ 
+			'show_confirmation_on_dangerous_actions' => [
 				'default' => '1',
 				'validator_class' => 'ADBC_Common_Validator',
 				'validator_method' => 'is_string_equals_0_or_1'
 			],
-			'general_cleanup_auto_count' => [ 
+			'general_cleanup_auto_count' => [
 				'default' => [],
 				'validator_class' => 'ADBC_Settings_Validator',
 				'validator_method' => 'is_general_cleanup_auto_count_valid'
+			],
+			// xxx: BF 2026. '1' while the Black Friday modal waits to be shown on the Plugins page, '0' once shown.
+			// Existing sites don't have this key until they update to this version, so the default '1' means "just updated".
+			// Safe to delete later: unknown keys are simply dropped when the settings load.
+			'bf2026_plugins_modal_pending' => [
+				'default' => '1',
+				'validator_class' => 'ADBC_Common_Validator',
+				'validator_method' => 'is_string_equals_0_or_1'
 			],
 		];
 	}
@@ -355,7 +363,7 @@ class ADBC_Settings extends ADBC_Singleton {
 	 * @return array<string, array{type: string, value: int}>
 	 */
 	private static function default_keep_last() {
-		return [ 
+		return [
 			'actionscheduler_completed_actions' => [ 'type' => 'days', 'value' => 30 ],
 			'actionscheduler_failed_actions' => [ 'type' => 'days', 'value' => 30 ],
 			'actionscheduler_canceled_actions' => [ 'type' => 'days', 'value' => 14 ],

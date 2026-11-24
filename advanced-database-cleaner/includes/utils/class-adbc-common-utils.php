@@ -11,6 +11,12 @@ if ( ! defined( 'ABSPATH' ) )
  */
 class ADBC_Common_Utils {
 
+	/** Version a built asset so a rebuild also refreshes immutable browser caches. */
+	public static function get_asset_version( $relative_path ) {
+		$path = ADBC_PLUGIN_DIR_PATH . 'assets/' . $relative_path;
+		return is_file( $path ) ? ADBC_PLUGIN_VERSION . '.' . filemtime( $path ) : ADBC_PLUGIN_VERSION;
+	}
+
 	/**
 	 * Format bytes.
 	 *

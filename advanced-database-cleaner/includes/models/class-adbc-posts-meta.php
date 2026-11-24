@@ -60,9 +60,9 @@ class ADBC_Posts_Meta {
 				// Only process the current batch if it's within the desired page range
 				if ( $currentRecord >= $startRecord && $currentRecord < $endRecord ) {
 
-					$posts_meta_list[] = [ 
+					$posts_meta_list[] = [
 						// This id is used to identify the post meta in the frontend and take actions on it
-						'composite_id' => [ 
+						'composite_id' => [
 							'items_type' => 'posts_meta',
 							'site_id' => (int) $post_meta->site_id,
 							'id' => (int) $post_meta->meta_id,
@@ -96,7 +96,7 @@ class ADBC_Posts_Meta {
 		// Calculate total number of pages to verify that the current page sent by the user is within the range
 		$total_real_pages = max( 1, ceil( $total_posts_meta / $filters['items_per_page'] ) );
 
-		return ADBC_Rest::success( "", [ 
+		return ADBC_Rest::success( "", [
 			'items' => $posts_meta_list,
 			'total_items' => $total_posts_meta,
 			'real_current_page' => min( $filters['current_page'], $total_real_pages ),
@@ -128,7 +128,7 @@ class ADBC_Posts_Meta {
 		/* ────────────────────────────────────────────────────────────
 		 * Build a safe ORDER BY clause
 		 * ────────────────────────────────────────────────────────────*/
-		$allowed_columns = [ 
+		$allowed_columns = [
 			'meta_key' => '`name`',
 			'size' => '`size`',
 			'post_id' => '`post_id`',
@@ -704,15 +704,17 @@ class ADBC_Posts_Meta {
 	 * @return array An array of posts meta names that were not processed (not deleted).
 	 */
 	public static function delete_posts_meta( $grouped_selected ) {
+		return ADBC_Change_Log::run( 'delete_posts_meta', [ 'items_type' => 'posts_meta', 'selected' => $grouped_selected ], function () use ($grouped_selected) {
 
-		$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
+			$cleanup_method = ADBC_Settings::instance()->get_setting( 'sql_or_native_cleanup_method' );
 
-		if ( $cleanup_method === 'native' ) {
-			return self::delete_posts_meta_native( $grouped_selected );
-		}
+			if ( $cleanup_method === 'native' ) {
+				return self::delete_posts_meta_native( $grouped_selected );
+			}
 
-		return self::delete_posts_meta_sql( $grouped_selected );
+			return self::delete_posts_meta_sql( $grouped_selected );
 
+		}, [ 'failures' => true ] );
 	}
 
 	/**
@@ -778,7 +780,7 @@ class ADBC_Posts_Meta {
 			// Bulk delete.
 			$sql = "DELETE FROM {$wpdb->postmeta} WHERE meta_id IN ($placeholders)";
 			$sql = $wpdb->prepare( $sql, ...$ids );
-			$wpdb->query( $sql );
+			ADBC_Change_Log::query( $sql );
 
 			// Identify any remaining rows (not processed) deterministically (get names directly).
 			$check_sql = "SELECT meta_key FROM {$wpdb->postmeta} WHERE meta_id IN ($placeholders)";
@@ -805,7 +807,7 @@ class ADBC_Posts_Meta {
 	 *
 	 * @param array $posts_meta_names List of meta_key names to check for existence.
 	 *
-	 * @return array Existing names found across all sites.
+	 * @return array Existing names, or all requested names if the lookup cannot be completed.
 	 */
 	public static function get_posts_meta_names_that_exists_from_list( $posts_meta_names ) {
 
@@ -814,30 +816,32 @@ class ADBC_Posts_Meta {
 		if ( empty( $posts_meta_names ) || ! is_array( $posts_meta_names ) )
 			return [];
 
-		$branches = [];
+		$existing_names = [];
 		$sites = ADBC_Sites::instance()->get_sites_list();
+		if ( empty( $sites ) )
+			return array_values( array_unique( $posts_meta_names ) );
+
 		$in_placeholders = implode( ',', array_fill( 0, count( $posts_meta_names ), '%s' ) );
 
 		foreach ( $sites as $site ) {
 			$table = $site['prefix'] . 'postmeta';
+			// Compare using the table's collation, but keep distinct spellings in the results.
 			$sql = $wpdb->prepare(
-				"SELECT DISTINCT meta_key AS name
+				"SELECT DISTINCT meta_key, CAST(meta_key AS BINARY)
 				 FROM `{$table}`
 				 WHERE meta_key IN ( {$in_placeholders} )",
 				...$posts_meta_names
 			);
-			$branches[] = '(' . $sql . ')';
+			if ( false === $wpdb->query( $sql ) ) {
+				// A failed lookup must not remove potentially valid scan classifications.
+				return array_values( array_unique( $posts_meta_names ) );
+			}
+			foreach ( $wpdb->get_col() as $name ) {
+				$existing_names[ $name ] = $name;
+			}
 		}
 
-		if ( empty( $branches ) )
-			return [];
-
-		$union_sql = implode( "\nUNION ALL\n", $branches );
-		$query = "SELECT DISTINCT name FROM ( {$union_sql} ) AS existing_names";
-
-		$existing_names = $wpdb->get_col( $query );
-
-		return array_values( array_unique( array_filter( (array) $existing_names ) ) );
+		return array_values( $existing_names );
 	}
 
 	/**

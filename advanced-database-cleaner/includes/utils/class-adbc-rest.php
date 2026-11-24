@@ -29,11 +29,14 @@ class ADBC_Rest {
 	 */
 	public static function success( $message = "", $data = [], $extra_data = [] ) {
 
-		$response = [ 
+		$response = [
 			'success' => true,
 			'message' => $message,
 			'data' => $data,
 		];
+		if ( ADBC_Change_Log::warning() ) {
+			$response['logging_warning'] = ADBC_Change_Log::warning();
+		}
 
 		if ( ! empty( $extra_data ) )
 			$response['extra_data'] = $extra_data;
@@ -57,7 +60,7 @@ class ADBC_Rest {
 	 */
 	public static function error( $message, $status_code, $failure_code = 0, $extra_data = [] ) {
 
-		$response = [ 
+		$response = [
 			'success' => false,
 			'message' => $message,
 		];
@@ -91,9 +94,9 @@ class ADBC_Rest {
 		$failure_code = $exception->getCode(); // Returns 0 if no code is set
 
 		// Attach a default "Check the logs" link.
-		$extra_data = [ 
-			'message_links' => [ 
-				[ 
+		$extra_data = [
+			'message_links' => [
+				[
 					'text' => __( 'Check the logs', 'advanced-database-cleaner' ),
 					'tab_id' => 'info_and_logs',
 					'sub_tab_id' => 'debug',
@@ -116,14 +119,14 @@ class ADBC_Rest {
 	public static function heartbeat( $message = "", $heartbeat_code = "", $data = [] ) {
 
 		return new WP_REST_Response(
-			[ 
+			[
 				'success' => true,
 				'message' => $message,
 				'heartbeat_code' => $heartbeat_code,
 				'data' => $data,
-				"extra_data" => [ 
-					'message_links' => [ 
-						[ 
+				"extra_data" => [
+					'message_links' => [
+						[
 							'text' => __( 'Check the logs', 'advanced-database-cleaner' ),
 							'tab_id' => 'info_and_logs',
 							'sub_tab_id' => 'debug',
